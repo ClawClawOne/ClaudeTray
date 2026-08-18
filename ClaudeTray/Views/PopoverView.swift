@@ -66,6 +66,7 @@ struct PopoverView: View {
             .pickerStyle(.menu)
             .controlSize(.small)
 
+            Toggle("Afficher le logo Claude", isOn: $store.showLogo)
             Toggle("Barre de menu : afficher 5 h et hebdo", isOn: $store.showBothWindows)
 
             Picker("Métrique unique", selection: $store.metric) {

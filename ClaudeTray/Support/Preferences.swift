@@ -68,6 +68,7 @@ enum PreferenceKey {
     static let percentColor = "percentColorHex"
     static let refreshInterval = "refreshInterval"
     static let itemSpacing = "itemSpacing"
+    static let showLogo = "showLogo"
     static let notificationsEnabled = "notificationsEnabled"
 }
 

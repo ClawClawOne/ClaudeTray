@@ -37,10 +37,12 @@ struct MenuBarLabel: View {
 
     private var content: some View {
         HStack(spacing: store.itemSpacing) {
-            ClaudeGlyph()
-                .fill(monochrome)
-                .frame(width: 14, height: 14)
-                .padding(.trailing, 5)   // respiration supplémentaire entre le logo et les données
+            if store.showLogo {
+                ClaudeGlyph()
+                    .fill(monochrome)
+                    .frame(width: 14, height: 14)
+                    .padding(.trailing, 5)   // respiration supplémentaire entre le logo et les données
+            }
 
             if store.showBothWindows {
                 column(title: "5H", window: store.snapshot?.window(.fiveHour))
@@ -59,6 +61,7 @@ struct MenuBarLabel: View {
                     .foregroundStyle(monochrome.opacity(0.6))
             }
         }
+        // Marge identique à gauche et à droite, logo affiché ou non.
         .padding(.horizontal, 2)
         .frame(height: 22)
         .fixedSize()

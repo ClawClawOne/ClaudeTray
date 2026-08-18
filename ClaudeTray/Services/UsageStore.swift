@@ -25,6 +25,10 @@ final class UsageStore: ObservableObject {
     @Published var showRemaining: Bool {
         didSet { defaults.set(showRemaining, forKey: PreferenceKey.showRemaining) }
     }
+    /// Affichage du logo Claude dans la barre de menu.
+    @Published var showLogo: Bool {
+        didSet { defaults.set(showLogo, forKey: PreferenceKey.showLogo) }
+    }
     /// Espacement entre les éléments de la barre de menu, en points.
     @Published var itemSpacing: Double {
         didSet { defaults.set(itemSpacing, forKey: PreferenceKey.itemSpacing) }
@@ -82,6 +86,7 @@ final class UsageStore: ObservableObject {
         metric = MenuBarMetric(rawValue: storedMetric) ?? .mostConstrained
         showRemaining = defaults.bool(forKey: PreferenceKey.showRemaining)
         showBothWindows = defaults.object(forKey: PreferenceKey.showBothWindows) as? Bool ?? true
+        showLogo = defaults.object(forKey: PreferenceKey.showLogo) as? Bool ?? true
         itemSpacing = defaults.object(forKey: PreferenceKey.itemSpacing) as? Double
             ?? MenuBarLayout.defaultSpacing
         refreshInterval = RefreshInterval(rawValue: defaults.string(forKey: PreferenceKey.refreshInterval) ?? "")

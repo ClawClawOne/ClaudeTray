@@ -144,6 +144,7 @@ interfaces : `UsageStore` est le seul point de contact entre les services et les
   FABLE, OPUS… selon ce que renvoie l'API), ou une seule métrique — fenêtre 5 h,
   hebdomadaire, ou la plus contrainte des deux.
 - Couleur des pourcentages : huit pastilles cliquables (vert par défaut).
+- Logo Claude affiché ou masqué. Masqué, les colonnes gardent la même marge des deux côtés.
 - Espacement des éléments de la barre de menu, de 2 à 24 pt (10 pt par défaut).
 - Afficher le restant plutôt que le consommé.
 - Notifications à 80 % et 95 % de chaque fenêtre, une seule fois par fenêtre, ré-armées au reset.

@@ -1,11 +1,27 @@
 import Foundation
 
-/// Identifiant stable d'une fenêtre de quota renvoyée par l'API.
-enum UsageWindowID: String, CaseIterable, Codable {
-    case fiveHour = "five_hour"
-    case sevenDay = "seven_day"
-    case sevenDaySonnet = "seven_day_sonnet"
-    case sevenDayOpus = "seven_day_opus"
+/// Identifiant stable d'une fenêtre de quota.
+///
+/// Les fenêtres par modèle (`weekly_scoped` dans `limits`) portent le nom que l'API
+/// leur donne — « Fable », « Opus »… — et ne peuvent donc pas être une liste figée.
+enum UsageWindowID: Hashable {
+    case fiveHour
+    case sevenDay
+    case sevenDaySonnet
+    case sevenDayOpus
+    /// Fenêtre hebdomadaire limitée à un modèle, désigné par son nom d'affichage.
+    case scopedWeekly(String)
+
+    /// Clé stable, utilisée pour les identifiants de notification.
+    var key: String {
+        switch self {
+        case .fiveHour: return "five_hour"
+        case .sevenDay: return "seven_day"
+        case .sevenDaySonnet: return "seven_day_sonnet"
+        case .sevenDayOpus: return "seven_day_opus"
+        case .scopedWeekly(let model): return "weekly_scoped_\(model)"
+        }
+    }
 
     var title: String {
         switch self {
@@ -13,6 +29,18 @@ enum UsageWindowID: String, CaseIterable, Codable {
         case .sevenDay: return "Hebdomadaire"
         case .sevenDaySonnet: return "Hebdo Sonnet"
         case .sevenDayOpus: return "Hebdo Opus"
+        case .scopedWeekly(let model): return "Hebdo \(model)"
+        }
+    }
+
+    /// Intitulé de la barre de menu, en capitales.
+    var compactTitle: String {
+        switch self {
+        case .fiveHour: return "5H"
+        case .sevenDay: return "WEEK"
+        case .sevenDaySonnet: return "SONNET"
+        case .sevenDayOpus: return "OPUS"
+        case .scopedWeekly(let model): return model.uppercased()
         }
     }
 
@@ -21,8 +49,9 @@ enum UsageWindowID: String, CaseIterable, Codable {
         switch self {
         case .fiveHour: return 0
         case .sevenDay: return 1
-        case .sevenDaySonnet: return 2
-        case .sevenDayOpus: return 3
+        case .scopedWeekly: return 2
+        case .sevenDaySonnet: return 3
+        case .sevenDayOpus: return 4
         }
     }
 }
@@ -38,6 +67,27 @@ struct RawUsageWindow: Decodable {
     }
 }
 
+/// Une entrée du tableau `limits`, seule source des fenêtres par modèle.
+struct RawLimit: Decodable {
+    struct Scope: Decodable {
+        struct Model: Decodable {
+            let displayName: String?
+            enum CodingKeys: String, CodingKey { case displayName = "display_name" }
+        }
+        let model: Model?
+    }
+
+    let kind: String?
+    let percent: Double?
+    let resetsAt: Date?
+    let scope: Scope?
+
+    enum CodingKeys: String, CodingKey {
+        case kind, percent, scope
+        case resetsAt = "resets_at"
+    }
+}
+
 /// Réponse complète de `GET /api/oauth/usage`. On ne décode que ce qu'on affiche ;
 /// les clés inconnues ou nouvelles sont ignorées sans faire échouer le décodage.
 struct RawUsageResponse: Decodable {
@@ -45,8 +95,10 @@ struct RawUsageResponse: Decodable {
     let sevenDay: RawUsageWindow?
     let sevenDaySonnet: RawUsageWindow?
     let sevenDayOpus: RawUsageWindow?
+    let limits: [RawLimit]?
 
     enum CodingKeys: String, CodingKey {
+        case limits
         case fiveHour = "five_hour"
         case sevenDay = "seven_day"
         case sevenDaySonnet = "seven_day_sonnet"
@@ -78,6 +130,16 @@ struct UsageSnapshot: Equatable {
         windows.first { $0.id == id }
     }
 
+    /// Première fenêtre limitée à un modèle donné, insensible à la casse.
+    func scopedWindow(named model: String) -> UsageWindow? {
+        windows.first { window in
+            if case .scopedWeekly(let name) = window.id {
+                return name.caseInsensitiveCompare(model) == .orderedSame
+            }
+            return false
+        }
+    }
+
     /// La fenêtre la plus contrainte entre 5 h et hebdo global.
     var mostConstrained: UsageWindow? {
         [window(.fiveHour), window(.sevenDay)]
@@ -92,11 +154,21 @@ struct UsageSnapshot: Equatable {
             (.sevenDaySonnet, raw.sevenDaySonnet),
             (.sevenDayOpus, raw.sevenDayOpus),
         ]
-        self.windows = pairs.compactMap { id, raw in
+        var windows: [UsageWindow] = pairs.compactMap { id, raw in
             guard let raw, let normalized = Utilization.normalize(raw.utilization) else { return nil }
             return UsageWindow(id: id, percentUsed: normalized, resetsAt: raw.resetsAt)
         }
-        .sorted { $0.id.displayOrder < $1.id.displayOrder }
+
+        // Fenêtres par modèle : elles n'existent que dans `limits`, sous `weekly_scoped`.
+        for limit in raw.limits ?? [] where limit.kind == "weekly_scoped" {
+            guard let model = limit.scope?.model?.displayName, !model.isEmpty,
+                  let normalized = Utilization.normalize(limit.percent) else { continue }
+            let id = UsageWindowID.scopedWeekly(model)
+            guard !windows.contains(where: { $0.id == id }) else { continue }
+            windows.append(UsageWindow(id: id, percentUsed: normalized, resetsAt: limit.resetsAt))
+        }
+
+        self.windows = windows.sorted { $0.id.displayOrder < $1.id.displayOrder }
         self.fetchedAt = fetchedAt
     }
 

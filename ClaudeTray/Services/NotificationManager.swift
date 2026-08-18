@@ -47,7 +47,7 @@ final class NotificationManager {
         }
         content.sound = .default
 
-        let request = UNNotificationRequest(identifier: "\(window.id.rawValue)-\(threshold)-\(window.resetsAt?.timeIntervalSince1970 ?? 0)",
+        let request = UNNotificationRequest(identifier: "\(window.id.key)-\(threshold)-\(window.resetsAt?.timeIntervalSince1970 ?? 0)",
                                             content: content,
                                             trigger: nil)
         UNUserNotificationCenter.current().add(request)

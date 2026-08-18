@@ -88,10 +88,25 @@ struct PopoverView: View {
             }
             .controlSize(.small)
 
-            HStack {
-                ColorPicker("Couleur des pourcentages", selection: $store.percentColor, supportsOpacity: false)
-                Button("Défaut") { store.percentColor = ColorStorage.defaultPercentColor }
-                    .controlSize(.small)
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Couleur des pourcentages")
+                HStack(spacing: 6) {
+                    ForEach(ColorStorage.palette, id: \.name) { entry in
+                        Button {
+                            store.percentColor = entry.color
+                        } label: {
+                            Circle()
+                                .fill(entry.color)
+                                .frame(width: 16, height: 16)
+                                .overlay(
+                                    Circle().strokeBorder(.primary,
+                                                          lineWidth: ColorStorage.hex(from: entry.color) == ColorStorage.hex(from: store.percentColor) ? 2 : 0)
+                                )
+                        }
+                        .buttonStyle(.plain)
+                        .help(entry.name)
+                    }
+                }
             }
 
             Toggle("Afficher le restant plutôt que le consommé", isOn: $store.showRemaining)

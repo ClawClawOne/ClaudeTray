@@ -40,10 +40,15 @@ struct MenuBarLabel: View {
             ClaudeGlyph()
                 .fill(monochrome)
                 .frame(width: 14, height: 14)
+                .padding(.trailing, 5)   // respiration supplémentaire entre le logo et les données
 
             if store.showBothWindows {
                 column(title: "5H", window: store.snapshot?.window(.fiveHour))
                 column(title: "WEEK", window: store.snapshot?.window(.sevenDay))
+                // Fenêtres par modèle (Fable, Opus…), telles que l'API les nomme.
+                ForEach(store.scopedWindows) { window in
+                    column(title: window.id.compactTitle, window: window)
+                }
             } else {
                 column(title: store.metric.compactLabel, window: store.menuBarWindow)
             }

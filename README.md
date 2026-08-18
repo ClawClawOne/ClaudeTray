@@ -140,9 +140,10 @@ interfaces : `UsageStore` est le seul point de contact entre les services et les
 ## Réglages (popover)
 
 - Rafraîchissement : Auto, 1 min, 5 min, 15 min, 30 min, 1 h.
-- Barre de menu : les deux fenêtres côte à côte (5h / Week), ou une seule métrique — fenêtre 5 h,
+- Barre de menu : les fenêtres côte à côte (5H / WEEK, plus une colonne par modèle limité —
+  FABLE, OPUS… selon ce que renvoie l'API), ou une seule métrique — fenêtre 5 h,
   hebdomadaire, ou la plus contrainte des deux.
-- Couleur des pourcentages, avec bouton « Défaut » pour revenir au vert.
+- Couleur des pourcentages : huit pastilles cliquables (vert par défaut).
 - Espacement des éléments de la barre de menu, de 2 à 24 pt (10 pt par défaut).
 - Afficher le restant plutôt que le consommé.
 - Notifications à 80 % et 95 % de chaque fenêtre, une seule fois par fenêtre, ré-armées au reset.
@@ -165,6 +166,13 @@ interfaces : `UsageStore` est le seul point de contact entre les services et les
   (`NSApp.effectiveAppearance`), et le rendu est rafraîchi une fois par seconde.
 - **Logo Claude dessiné en `Path`** (`Views/ClaudeGlyph.swift`), pas en asset : rien à embarquer et
   rendu net à toutes les tailles.
+- **Pastilles de couleur plutôt qu'un `ColorPicker`.** Le `ColorPicker` ouvre `NSColorPanel`,
+  qui prend le focus et referme aussitôt le popover de la barre de menu : le choix était
+  impossible à valider. Huit pastilles cliquables règlent le problème sans quitter le popover.
+- **Fenêtres par modèle lues dans `limits`.** `seven_day_sonnet` et `seven_day_opus` sont `null`
+  sur ce compte ; le quota par modèle n'existe que dans le tableau `limits`, entrées
+  `kind == "weekly_scoped"`, avec le nom du modèle dans `scope.model.display_name`. La colonne
+  FABLE en vient. Aucune liste de modèles n'est figée dans le code : l'app affiche ce que l'API nomme.
 - **Couleur personnalisable pour le confort seulement.** Le `ColorPicker` change la couleur sous
   80 % ; les seuils orange 80 % et rouge 95 % ne sont pas modifiables, ce sont eux qui alertent.
 - **Cadence fixe autorisée jusqu'à 1 min.** L'endpoint renvoie des 429 s'il est trop sollicité : en

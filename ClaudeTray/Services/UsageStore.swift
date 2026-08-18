@@ -109,6 +109,14 @@ final class UsageStore: ObservableObject {
         }
     }
 
+    /// Fenêtres limitées à un modèle, dans l'ordre renvoyé par l'API.
+    var scopedWindows: [UsageWindow] {
+        (snapshot?.windows ?? []).filter { window in
+            if case .scopedWeekly = window.id { return true }
+            return false
+        }
+    }
+
     var isStale: Bool {
         guard let lastSuccess else { return snapshot != nil }
         return now.timeIntervalSince(lastSuccess) > Thresholds.staleAfter

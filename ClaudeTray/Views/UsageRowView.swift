@@ -6,11 +6,12 @@ struct UsageRowView: View {
     let now: Date
     let showRemaining: Bool
     let baseColor: Color
+    let loc: Loc
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(alignment: .firstTextBaseline) {
-                Text(window.title)
+                Text(window.title(loc))
                     .font(.system(size: 12, weight: .semibold))
                 Spacer()
                 Text(UsageFormatting.percent(showRemaining ? window.percentRemaining : window.percentUsed))
@@ -24,12 +25,12 @@ struct UsageRowView: View {
 
             // Aucun reset n'est calculé localement : on n'affiche que ce que l'API renvoie.
             if let resetsAt = window.resetsAt {
-                Text("Reset dans \(UsageFormatting.countdown(to: resetsAt, from: now))")
+                Text(loc.resetIn(UsageFormatting.countdown(to: resetsAt, from: now, loc: loc)))
                     .font(.system(size: 10))
                     .foregroundStyle(.secondary)
                     .monospacedDigit()
             } else {
-                Text("Reset non communiqué par l'API")
+                Text(loc.resetUnknown)
                     .font(.system(size: 10))
                     .foregroundStyle(.secondary)
             }

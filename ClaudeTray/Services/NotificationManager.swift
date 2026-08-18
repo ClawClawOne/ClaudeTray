@@ -17,7 +17,7 @@ final class NotificationManager {
     }
 
     /// À appeler à chaque instantané reçu.
-    func evaluate(snapshot: UsageSnapshot, enabled: Bool) {
+    func evaluate(snapshot: UsageSnapshot, enabled: Bool, loc: Loc) {
         for window in snapshot.windows {
             var state = fired[window.id] ?? (reset: window.resetsAt, thresholds: [])
             if state.reset != window.resetsAt {
@@ -30,21 +30,22 @@ final class NotificationManager {
                       !state.thresholds.contains(threshold) else { continue }
                 state.thresholds.insert(threshold)
                 if enabled {
-                    post(window: window, threshold: threshold)
+                    post(window: window, threshold: threshold, loc: loc)
                 }
             }
             fired[window.id] = state
         }
     }
 
-    private func post(window: UsageWindow, threshold: Int) {
+    private func post(window: UsageWindow, threshold: Int, loc: Loc) {
         let content = UNMutableNotificationContent()
-        content.title = "\(window.title) à \(threshold) %"
-        if let reset = window.resetsAt {
-            content.body = "\(Int(window.percentUsed.rounded())) % consommé. Reset \(Self.relative.localizedString(for: reset, relativeTo: Date()))."
-        } else {
-            content.body = "\(Int(window.percentUsed.rounded())) % consommé."
-        }
+        content.title = loc.notificationTitle(window.title(loc), threshold)
+        let relative = RelativeDateTimeFormatter()
+        relative.locale = loc.locale
+        relative.unitsStyle = .full
+        content.body = loc.notificationBody(
+            percent: Int(window.percentUsed.rounded()),
+            reset: window.resetsAt.map { relative.localizedString(for: $0, relativeTo: Date()) })
         content.sound = .default
 
         let request = UNNotificationRequest(identifier: "\(window.id.key)-\(threshold)-\(window.resetsAt?.timeIntervalSince1970 ?? 0)",
@@ -52,11 +53,4 @@ final class NotificationManager {
                                             trigger: nil)
         UNUserNotificationCenter.current().add(request)
     }
-
-    private static let relative: RelativeDateTimeFormatter = {
-        let formatter = RelativeDateTimeFormatter()
-        formatter.locale = Locale(identifier: "fr_FR")
-        formatter.unitsStyle = .full
-        return formatter
-    }()
 }

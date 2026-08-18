@@ -23,13 +23,13 @@ enum UsageWindowID: Hashable {
         }
     }
 
-    var title: String {
+    func title(_ loc: Loc) -> String {
         switch self {
-        case .fiveHour: return "Fenêtre 5 h"
-        case .sevenDay: return "Hebdomadaire"
-        case .sevenDaySonnet: return "Hebdo Sonnet"
-        case .sevenDayOpus: return "Hebdo Opus"
-        case .scopedWeekly(let model): return "Hebdo \(model)"
+        case .fiveHour: return loc.metricFiveHour
+        case .sevenDay: return loc.metricWeekly
+        case .sevenDaySonnet: return loc.weeklyModel("Sonnet")
+        case .sevenDayOpus: return loc.weeklyModel("Opus")
+        case .scopedWeekly(let model): return loc.weeklyModel(model)
         }
     }
 
@@ -117,7 +117,7 @@ struct UsageWindow: Identifiable, Equatable {
     let percentUsed: Double
     let resetsAt: Date?
 
-    var title: String { id.title }
+    func title(_ loc: Loc) -> String { id.title(loc) }
     var percentRemaining: Double { max(0, 100 - percentUsed) }
 }
 

@@ -2,6 +2,15 @@
 
 [ClaudeTray](https://github.com/ClawClawOne/ClaudeTray) — [TheUnnamedCompany](https://theunnamedcompany.com)
 
+## 1.1 — 18 August 2026
+
+- **The interface is now available in English, French, German, Spanish and Italian.** It follows the
+  macOS language by default, with English as the fallback, and a picker in the popover forces any of
+  the five. The change applies immediately, with no restart: translations live in `Loc`, a plain Swift
+  struct, rather than in `.lproj` bundles, which cannot be switched at runtime.
+- Dates, times and countdown units follow the selected language.
+- Error messages, notifications and quota window titles are translated too.
+
 ## 1.0 — 18 August 2026
 
 First release.

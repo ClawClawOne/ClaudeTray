@@ -1,6 +1,6 @@
 import Foundation
 
-enum UsageAPIError: LocalizedError {
+enum UsageAPIError: Error {
     case unauthorized
     case rateLimited(retryAfter: TimeInterval?)
     case unexpectedSchema
@@ -8,23 +8,20 @@ enum UsageAPIError: LocalizedError {
     case network(String)
     case token(TokenError)
 
-    var errorDescription: String? {
+    func message(_ loc: Loc) -> String {
         switch self {
         case .unauthorized:
-            return "401 — token refusé ou expiré. Lance Claude Code pour le rafraîchir, ou colle un token manuel."
+            return loc.errorUnauthorized
         case .rateLimited(let retryAfter):
-            if let retryAfter {
-                return "429 — trop de requêtes. Nouvelle tentative dans \(Int(retryAfter.rounded())) s."
-            }
-            return "429 — trop de requêtes. Ralentissement automatique en cours."
+            return loc.errorRateLimited(retryAfter.map { Int($0.rounded()) })
         case .unexpectedSchema:
-            return "Réponse au format inattendu : l'endpoint a probablement changé. Voir la section « Le jour où ça casse » du README."
+            return loc.errorUnexpectedSchema
         case .http(let status):
-            return "Erreur HTTP \(status) depuis api.anthropic.com."
-        case .network(let message):
-            return "Réseau indisponible : \(message)"
+            return loc.errorHTTP(status)
+        case .network(let detail):
+            return loc.errorNetwork(detail)
         case .token(let error):
-            return error.errorDescription
+            return error.message(loc)
         }
     }
 

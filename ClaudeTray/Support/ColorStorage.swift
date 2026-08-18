@@ -9,15 +9,15 @@ enum ColorStorage {
     /// Palette proposée dans le popover. Un `ColorPicker` y ouvrirait `NSColorPanel`,
     /// ce qui referme le popover de la barre de menu et rend le choix impossible :
     /// des pastilles cliquables sont le seul mécanisme qui fonctionne à cet endroit.
-    static let palette: [(name: String, color: Color)] = [
-        ("Vert", defaultPercentColor),
-        ("Cyan", Color(red: 0.20, green: 0.82, blue: 0.92)),
-        ("Bleu", Color(red: 0.31, green: 0.60, blue: 1.00)),
-        ("Violet", Color(red: 0.71, green: 0.55, blue: 1.00)),
-        ("Rose", Color(red: 1.00, green: 0.45, blue: 0.72)),
-        ("Jaune", Color(red: 1.00, green: 0.83, blue: 0.25)),
-        ("Orange Claude", Color(red: 0.85, green: 0.47, blue: 0.34)),
-        ("Blanc", Color.white),
+    static let palette: [(key: String, color: Color)] = [
+        ("green", defaultPercentColor),
+        ("cyan", Color(red: 0.20, green: 0.82, blue: 0.92)),
+        ("blue", Color(red: 0.31, green: 0.60, blue: 1.00)),
+        ("purple", Color(red: 0.71, green: 0.55, blue: 1.00)),
+        ("pink", Color(red: 1.00, green: 0.45, blue: 0.72)),
+        ("yellow", Color(red: 1.00, green: 0.83, blue: 0.25)),
+        ("orange", Color(red: 0.85, green: 0.47, blue: 0.34)),
+        ("white", Color.white),
     ]
 
     static func hex(from color: Color) -> String {

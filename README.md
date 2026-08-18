@@ -57,6 +57,7 @@ local notification fires at both thresholds, once per window, re-armed at the ne
 
 | Setting | Effect |
 | --- | --- |
+| Language | System, English, French, German, Spanish, Italian |
 | Refresh rate | Auto, 1 min, 5 min, 15 min, 30 min, 1 h |
 | Claude logo | Shown or hidden in the menu bar |
 | Windows shown | All side by side, or a single metric |
@@ -72,7 +73,11 @@ In **Auto** mode the app polls every 90 s while the 5-hour window is in use, eve
 Countdowns animate locally, once a second, and cost no request at all. Polling is suspended on sleep
 and on a locked session, and resumes on wake.
 
-Note: the app's interface is in French; this documentation is in English.
+### Languages
+
+The interface ships in **English, French, German, Spanish and Italian**. By default it follows your
+macOS language, falling back to English when none of the five matches. You can also force one from
+the popover — the change applies immediately, no restart.
 
 ### Columns
 
@@ -84,11 +89,11 @@ quota and disappears otherwise. No empty rows are left behind.
 
 | What you see | Cause | Fix |
 | --- | --- | --- |
-| "Aucun token trouvé" | Claude Code missing, or never logged in | Run `claude` then `/login`, or paste a token from `claude setup-token` |
-| "401 — token refusé ou expiré" | Expired token, Claude Code idle for a long time | Run `claude` once, or use a `setup-token` token |
-| "429 — trop de requêtes" | API polled too often | Nothing to do: the app backs off on its own, up to 30 min between attempts |
-| "Réponse au format inattendu" | The undocumented endpoint changed shape | Open an issue; the last valid data stays on screen |
-| "Données obsolètes depuis X" | No successful call for 15 min | Hit **Rafraîchir**, or check your network |
+| "No token found" | Claude Code missing, or never logged in | Run `claude` then `/login`, or paste a token from `claude setup-token` |
+| "401 — token rejected or expired" | Expired token, Claude Code idle for a long time | Run `claude` once, or use a `setup-token` token |
+| "429 — too many requests" | API polled too often | Nothing to do: the app backs off on its own, up to 30 min between attempts |
+| "Unexpected response format" | The undocumented endpoint changed shape | Open an issue; the last valid data stays on screen |
+| "Data stale for X" | No successful call for 15 min | Hit the refresh button, or check your network |
 | The keychain dialog keeps coming back | Unsigned build, compiled locally | Choose **Always Allow**, or paste a manual token |
 | Nothing in the menu bar | Menu bar is full | Quit another item, or reduce the spacing in the settings |
 
@@ -184,7 +189,7 @@ If the API changes, here is where to look:
 | Symptom | File |
 | --- | --- |
 | Persistent 401 with a valid token | `UsageAPIClient.betaHeader` — the beta header value changed |
-| "Réponse au format inattendu" | `Models/UsageModels.swift`, `RawUsageResponse` / `RawLimit` |
+| "Unexpected response format" | `Models/UsageModels.swift`, `RawUsageResponse` / `RawLimit` |
 | Percentages ×100 or ÷100 | `Utilization.normalize` — the only place that decides the scale |
 | Reset date not decoded | `UsageAPIClient.decodeISODate` |
 | Recurring 429s | `activeInterval` / `idleInterval` / `maxBackoff` in `UsageStore.swift` |
@@ -201,7 +206,7 @@ ClaudeTray/
 │   ├── UsageStore.swift         observable state, cadence, backoff, sleep
 │   ├── NotificationManager.swift  80% / 95% thresholds
 │   └── LaunchAtLogin.swift      SMAppService
-├── Support/                     persisted settings, colours
+├── Support/                     persisted settings, colours, translations
 └── Views/                       menu bar, popover, formatting
 ```
 

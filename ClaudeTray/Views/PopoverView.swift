@@ -5,6 +5,9 @@ struct PopoverView: View {
     @State private var manualToken = ""
     @State private var showTokenField = false
 
+    /// Raccourci : toutes les chaînes viennent de la langue choisie dans les réglages.
+    private var loc: Loc { store.loc }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             header
@@ -15,11 +18,12 @@ struct PopoverView: View {
                         UsageRowView(window: window,
                                      now: store.now,
                                      showRemaining: store.showRemaining,
-                                     baseColor: store.percentColor)
+                                     baseColor: store.percentColor,
+                                     loc: loc)
                     }
                 }
             } else {
-                Text("Aucune donnée d'usage pour l'instant.")
+                Text(loc.noData)
                     .font(.system(size: 11))
                     .foregroundStyle(.secondary)
             }
@@ -52,26 +56,34 @@ struct PopoverView: View {
                 Image(systemName: "arrow.clockwise")
             }
             .buttonStyle(.borderless)
-            .help("Rafraîchir maintenant")
+            .help(loc.refreshNow)
         }
     }
 
     private var settings: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Picker("Rafraîchissement", selection: $store.refreshInterval) {
-                ForEach(RefreshInterval.allCases) { interval in
-                    Text(interval.label).tag(interval)
+            Picker(loc.settingsLanguage, selection: $store.language) {
+                ForEach(AppLanguage.allCases) { language in
+                    Text(language.nativeName).tag(language)
                 }
             }
             .pickerStyle(.menu)
             .controlSize(.small)
 
-            Toggle("Afficher le logo Claude", isOn: $store.showLogo)
-            Toggle("Barre de menu : afficher 5 h et hebdo", isOn: $store.showBothWindows)
+            Picker(loc.settingsRefresh, selection: $store.refreshInterval) {
+                ForEach(RefreshInterval.allCases) { interval in
+                    Text(interval.label(loc)).tag(interval)
+                }
+            }
+            .pickerStyle(.menu)
+            .controlSize(.small)
 
-            Picker("Métrique unique", selection: $store.metric) {
+            Toggle(loc.showLogo, isOn: $store.showLogo)
+            Toggle(loc.showAllWindows, isOn: $store.showBothWindows)
+
+            Picker(loc.singleMetric, selection: $store.metric) {
                 ForEach(MenuBarMetric.allCases) { metric in
-                    Text(metric.label).tag(metric)
+                    Text(metric.label(loc)).tag(metric)
                 }
             }
             .pickerStyle(.menu)
@@ -79,7 +91,7 @@ struct PopoverView: View {
             .disabled(store.showBothWindows)
 
             HStack {
-                Text("Marge extérieure")
+                Text(loc.edgeMargin)
                 Slider(value: $store.edgeMargin,
                        in: 0...MenuBarLayout.maximumEdgeMargin,
                        step: 1)
@@ -90,7 +102,7 @@ struct PopoverView: View {
             .controlSize(.small)
 
             HStack {
-                Text("Espacement")
+                Text(loc.spacing)
                 Slider(value: $store.itemSpacing,
                        in: MenuBarLayout.minimumSpacing...MenuBarLayout.maximumSpacing,
                        step: 1)
@@ -101,9 +113,9 @@ struct PopoverView: View {
             .controlSize(.small)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("Couleur des pourcentages")
+                Text(loc.percentColor)
                 HStack(spacing: 6) {
-                    ForEach(ColorStorage.palette, id: \.name) { entry in
+                    ForEach(ColorStorage.palette, id: \.key) { entry in
                         Button {
                             store.percentColor = entry.color
                         } label: {
@@ -116,14 +128,14 @@ struct PopoverView: View {
                                 )
                         }
                         .buttonStyle(.plain)
-                        .help(entry.name)
+                        .help(loc.colorName(entry.key))
                     }
                 }
             }
 
-            Toggle("Afficher le restant plutôt que le consommé", isOn: $store.showRemaining)
-            Toggle("Notifications à 80 % et 95 %", isOn: $store.notificationsEnabled)
-            Toggle("Lancer au démarrage", isOn: $store.launchAtLogin)
+            Toggle(loc.showRemaining, isOn: $store.showRemaining)
+            Toggle(loc.notificationsSetting, isOn: $store.notificationsEnabled)
+            Toggle(loc.launchAtLogin, isOn: $store.launchAtLogin)
         }
         .toggleStyle(.checkbox)
         .font(.system(size: 11))
@@ -139,25 +151,25 @@ struct PopoverView: View {
             }
 
             if let staleFor = store.staleFor {
-                Text("Données obsolètes depuis \(UsageFormatting.shortDuration(staleFor)).")
+                Text(loc.staleSince(UsageFormatting.shortDuration(staleFor, loc: loc)))
                     .font(.system(size: 10))
                     .foregroundStyle(.secondary)
             }
 
             HStack(spacing: 4) {
-                Text("Token :")
-                Text(store.tokenSource?.rawValue ?? "non résolu")
+                Text(loc.tokenLabel)
+                Text(store.tokenSource?.label(loc) ?? loc.tokenUnresolved)
                     .foregroundStyle(store.tokenSource == nil ? .secondary : .primary)
             }
             .font(.system(size: 10))
 
-            Text(store.lastSuccess.map { "Dernier rafraîchissement réussi : \(UsageFormatting.clock.string(from: $0))" }
-                 ?? "Aucun rafraîchissement réussi.")
+            Text(store.lastSuccess.map { loc.lastRefresh(UsageFormatting.clockString($0, loc: loc)) }
+                 ?? loc.noRefreshYet)
                 .font(.system(size: 10))
                 .foregroundStyle(.secondary)
 
             if store.isPaused {
-                Text("Polling suspendu (veille ou session verrouillée).")
+                Text(loc.pollingPaused)
                     .font(.system(size: 10))
                     .foregroundStyle(.secondary)
             }
@@ -166,7 +178,7 @@ struct PopoverView: View {
 
             HStack {
                 Spacer()
-                Button("Quitter") { NSApplication.shared.terminate(nil) }
+                Button(loc.quit) { NSApplication.shared.terminate(nil) }
                     .controlSize(.small)
             }
         }
@@ -177,13 +189,13 @@ struct PopoverView: View {
     private var manualTokenSection: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Button(showTokenField ? "Masquer le token manuel" : "Coller un token manuel") {
+                Button(showTokenField ? loc.hideToken : loc.pasteToken) {
                     showTokenField.toggle()
                 }
                 .controlSize(.small)
 
                 if store.hasManualToken {
-                    Button("Effacer") { store.clearManualToken() }
+                    Button(loc.clear) { store.clearManualToken() }
                         .controlSize(.small)
                 }
             }
@@ -195,12 +207,12 @@ struct PopoverView: View {
                     .onSubmit(save)
 
                 HStack {
-                    Text("Issu de « claude setup-token ». Stocké en 0600 dans Application Support.")
+                    Text(loc.tokenHint)
                         .font(.system(size: 9))
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                     Spacer()
-                    Button("Enregistrer", action: save)
+                    Button(loc.save, action: save)
                         .controlSize(.small)
                         .disabled(manualToken.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }

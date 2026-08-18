@@ -13,12 +13,20 @@ final class UsageStore: ObservableObject {
     @Published private(set) var snapshot: UsageSnapshot?
     @Published private(set) var tokenSource: TokenSource?
     @Published private(set) var lastSuccess: Date?
-    @Published private(set) var errorMessage: String?
+    /// Erreur réseau courante, retraduite à la volée quand la langue change.
+    @Published private(set) var lastError: UsageAPIError?
+    /// Erreur locale (écriture du token, lancement au démarrage), stockée sous forme de closure
+    /// pour être elle aussi retraduite si la langue change.
+    @Published private var localError: ((Loc) -> String)?
     @Published private(set) var isRefreshing = false
     @Published private(set) var isPaused = false
     /// Horloge locale du compte à rebours : avance chaque seconde, sans appel réseau.
     @Published private(set) var now = Date()
 
+    /// Langue de l'interface. `system` suit macOS.
+    @Published var language: AppLanguage {
+        didSet { defaults.set(language.rawValue, forKey: PreferenceKey.language) }
+    }
     @Published var metric: MenuBarMetric {
         didSet { defaults.set(metric.rawValue, forKey: PreferenceKey.metric) }
     }
@@ -63,7 +71,7 @@ final class UsageStore: ObservableObject {
         didSet {
             guard launchAtLogin != LaunchAtLogin.isEnabled else { return }
             if let error = LaunchAtLogin.setEnabled(launchAtLogin) {
-                errorMessage = error
+                localError = { $0.errorLaunchAtLogin(error) }
                 launchAtLogin = LaunchAtLogin.isEnabled
             }
         }
@@ -86,6 +94,7 @@ final class UsageStore: ObservableObject {
     private let maxBackoff: TimeInterval = 30 * 60
 
     init() {
+        language = AppLanguage(rawValue: defaults.string(forKey: PreferenceKey.language) ?? "") ?? .system
         let storedMetric = defaults.string(forKey: PreferenceKey.metric) ?? MenuBarMetric.mostConstrained.rawValue
         metric = MenuBarMetric(rawValue: storedMetric) ?? .mostConstrained
         showRemaining = defaults.bool(forKey: PreferenceKey.showRemaining)
@@ -106,6 +115,15 @@ final class UsageStore: ObservableObject {
         startTicking()
         if notificationsEnabled { notifications.requestAuthorizationIfNeeded() }
         startPolling()
+    }
+
+    /// Toutes les chaînes de l'interface, dans la langue courante.
+    var loc: Loc { Loc(language) }
+
+    /// Message d'erreur affiché, ou nil s'il n'y en a pas.
+    var errorMessage: String? {
+        if let lastError { return lastError.message(loc) }
+        return localError?(loc)
     }
 
     // MARK: - Données dérivées
@@ -187,19 +205,20 @@ final class UsageStore: ObservableObject {
             self.snapshot = snapshot
             self.tokenSource = source
             self.lastSuccess = snapshot.fetchedAt
-            self.errorMessage = nil
+            self.lastError = nil
+            self.localError = nil
             self.consecutiveFailures = 0
             self.pendingRetryAfter = nil
             self.hasManualToken = TokenResolver.manualTokenExists()
-            notifications.evaluate(snapshot: snapshot, enabled: notificationsEnabled)
+            notifications.evaluate(snapshot: snapshot, enabled: notificationsEnabled, loc: loc)
         } catch let error as UsageAPIError {
             consecutiveFailures += 1
             pendingRetryAfter = error.serverRetryAfter
-            errorMessage = error.errorDescription
+            lastError = error
         } catch {
             consecutiveFailures += 1
             pendingRetryAfter = nil
-            errorMessage = error.localizedDescription
+            lastError = .network(error.localizedDescription)
         }
     }
 
@@ -230,7 +249,8 @@ final class UsageStore: ObservableObject {
             hasManualToken = TokenResolver.manualTokenExists()
             refreshNow()
         } catch {
-            errorMessage = "Écriture du token manuel impossible : \(error.localizedDescription)"
+            let detail = error.localizedDescription
+            localError = { $0.errorManualTokenWrite(detail) }
         }
     }
 

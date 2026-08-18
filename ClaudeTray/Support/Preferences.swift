@@ -17,11 +17,11 @@ enum MenuBarMetric: String, CaseIterable, Identifiable {
         }
     }
 
-    var label: String {
+    func label(_ loc: Loc) -> String {
         switch self {
-        case .fiveHour: return "Fenêtre 5 h"
-        case .weekly: return "Hebdomadaire"
-        case .mostConstrained: return "La plus contrainte"
+        case .fiveHour: return loc.metricFiveHour
+        case .weekly: return loc.metricWeekly
+        case .mostConstrained: return loc.metricMostConstrained
         }
     }
 }
@@ -37,14 +37,14 @@ enum RefreshInterval: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    var label: String {
+    func label(_ loc: Loc) -> String {
         switch self {
-        case .auto: return "Auto"
+        case .auto: return loc.intervalAuto
         case .minute1: return "1 min"
         case .minute5: return "5 min"
         case .minute15: return "15 min"
         case .minute30: return "30 min"
-        case .hour1: return "1 h"
+        case .hour1: return loc.intervalOneHour
         }
     }
 
@@ -70,6 +70,7 @@ enum PreferenceKey {
     static let itemSpacing = "itemSpacing"
     static let showLogo = "showLogo"
     static let edgeMargin = "edgeMargin"
+    static let language = "language"
     static let notificationsEnabled = "notificationsEnabled"
 }
 

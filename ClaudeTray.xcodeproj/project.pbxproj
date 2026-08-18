@@ -20,6 +20,7 @@
 		8F2B18024E78450D1ECB30CE /* LaunchAtLogin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D25F635BD026F50C0DA039 /* LaunchAtLogin.swift */; };
 		90651053490A89911C12FF70 /* ColorStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C5B9BBF5F7D5D9A19867EE /* ColorStorage.swift */; };
 		C613177453FE20BD17259EAB /* ClaudeTrayApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 390BDCA572F35E6306B8157A /* ClaudeTrayApp.swift */; };
+		C9E18EAFE786ABCD84D8FC08 /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 426783D005704AA3088117B3 /* Localization.swift */; };
 		F4BF9B9DA2BEA73D81A5A78C /* UsageAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = E95EA5DA2E25FA80744F6E2C /* UsageAPIClient.swift */; };
 /* End PBXBuildFile section */
 
@@ -27,6 +28,7 @@
 		2A0A2290A80EDD0802B00B63 /* Formatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formatting.swift; sourceTree = "<group>"; };
 		390BDCA572F35E6306B8157A /* ClaudeTrayApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeTrayApp.swift; sourceTree = "<group>"; };
 		405A7572734DF3D8CBE2F9B2 /* UsageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageStore.swift; sourceTree = "<group>"; };
+		426783D005704AA3088117B3 /* Localization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Localization.swift; sourceTree = "<group>"; };
 		58894594E9E075A2D0974B0C /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
 		5D0EE4782AC0DA9E75E46523 /* ClaudeGlyph.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeGlyph.swift; sourceTree = "<group>"; };
 		8A8B93761A5E2BBB20C62105 /* UsageRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageRowView.swift; sourceTree = "<group>"; };
@@ -110,6 +112,7 @@
 			children = (
 				E2C5B9BBF5F7D5D9A19867EE /* ColorStorage.swift */,
 				94D25F635BD026F50C0DA039 /* LaunchAtLogin.swift */,
+				426783D005704AA3088117B3 /* Localization.swift */,
 				AEED7C6194999679F4A4BE48 /* Preferences.swift */,
 			);
 			path = Support;
@@ -178,6 +181,7 @@
 				90651053490A89911C12FF70 /* ColorStorage.swift in Sources */,
 				4B78D46B99F1F1E91660A783 /* Formatting.swift in Sources */,
 				8F2B18024E78450D1ECB30CE /* LaunchAtLogin.swift in Sources */,
+				C9E18EAFE786ABCD84D8FC08 /* Localization.swift in Sources */,
 				743D403178771F295795F52D /* MenuBarLabel.swift in Sources */,
 				465DD7C8880B88673B574DB8 /* NotificationManager.swift in Sources */,
 				003C9728243EAEFF50551F6A /* PopoverView.swift in Sources */,
@@ -227,7 +231,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -246,7 +250,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -330,7 +334,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -343,7 +347,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";

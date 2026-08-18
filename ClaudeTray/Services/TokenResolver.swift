@@ -2,16 +2,16 @@ import Foundation
 import Security
 
 /// D'où vient le token utilisé pour le dernier appel réussi.
-enum TokenSource: String {
-    case manual = "Token manuel"
-    case keychain = "Trousseau macOS"
-    case credentialsFile = "~/.claude/.credentials.json"
+enum TokenSource {
+    case manual
+    case keychain
+    case credentialsFile
 
-    var detail: String {
+    func label(_ loc: Loc) -> String {
         switch self {
-        case .manual: return "Application Support/ClaudeTray/token"
-        case .keychain: return "service « Claude Code-credentials »"
-        case .credentialsFile: return "fichier de credentials Claude Code"
+        case .manual: return loc.sourceManual
+        case .keychain: return loc.sourceKeychain
+        case .credentialsFile: return loc.sourceFile
         }
     }
 }
@@ -21,20 +21,20 @@ struct ResolvedToken {
     let source: TokenSource
 }
 
-enum TokenError: LocalizedError {
+enum TokenError: Error {
     case notFound
     case keychainDenied(OSStatus)
     case malformed(String)
 
-    var errorDescription: String? {
+    func message(_ loc: Loc) -> String {
         switch self {
         case .notFound:
-            return "Aucun token trouvé. ClaudeTray a besoin de Claude Code installé et connecté : lance « claude » dans le Terminal puis « /login ». Sinon, colle ici un token issu de « claude setup-token »."
+            return loc.errorNoToken
         case .keychainDenied(let status):
-            let message = SecCopyErrorMessageString(status, nil) as String? ?? "code \(status)"
-            return "Accès au trousseau refusé (\(message)). Autorise ClaudeTray, ou colle un token manuel."
-        case .malformed(let where_):
-            return "Token illisible depuis \(where_) : structure JSON inattendue."
+            let detail = SecCopyErrorMessageString(status, nil) as String? ?? "code \(status)"
+            return loc.errorKeychainDenied(detail)
+        case .malformed(let origin):
+            return loc.errorMalformedToken(origin)
         }
     }
 }

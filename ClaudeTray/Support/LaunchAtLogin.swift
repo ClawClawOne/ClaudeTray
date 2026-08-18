@@ -18,7 +18,7 @@ enum LaunchAtLogin {
             }
             return nil
         } catch {
-            return "Lancement au démarrage : \(error.localizedDescription)"
+            return error.localizedDescription
         }
     }
 }

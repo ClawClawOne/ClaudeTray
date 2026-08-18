@@ -47,6 +47,8 @@ To uninstall: **Quitter** in the popover, then delete `/Applications/ClaudeTray.
 
 ## Using it
 
+<img src="docs/popover.png" alt="The ClaudeTray popover" width="380">
+
 Click the menu bar indicator to open the popover: one progress bar per quota window, each with its
 percentage and a countdown to its reset.
 

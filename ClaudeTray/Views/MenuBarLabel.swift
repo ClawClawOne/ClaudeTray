@@ -63,11 +63,12 @@ struct MenuBarLabel: View {
         // Deux lignes alignées à gauche : intitulé en capitales, pourcentage en dessous.
         VStack(alignment: .leading, spacing: -2.5) {
             Text(title)
-                .font(.system(size: 7, weight: .medium))
+                .font(.system(size: 7, weight: .regular))
                 .kerning(0.2)
                 .foregroundStyle(monochrome)
+                .offset(y: 1)
             Text(value(for: window))
-                .font(.system(size: 12, weight: .bold))
+                .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(color(for: window))
                 .monospacedDigit()
         }

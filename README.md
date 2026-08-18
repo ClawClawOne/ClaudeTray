@@ -158,6 +158,10 @@ interfaces : `UsageStore` est le seul point de contact entre les services et les
   colonne « Week », intitulé au-dessus du pourcentage. Le mode métrique unique reste disponible et
   utilise alors « la plus contrainte » par défaut — le seul chiffre qui ne peut pas mentir par
   omission quand une seule des deux fenêtres est proche de la limite.
+- **Label de barre de menu rasterisé.** `MenuBarExtra` ne rend pas une vue composée sur deux
+  lignes : il la réduit à son premier élément. `MenuBarLabel` rend donc sa vue via `ImageRenderer`
+  et fournit une `Image`. Contrepartie assumée : le clair/sombre est résolu à la main
+  (`NSApp.effectiveAppearance`), et le rendu est rafraîchi une fois par seconde.
 - **Logo Claude dessiné en `Path`** (`Views/ClaudeGlyph.swift`), pas en asset : rien à embarquer et
   rendu net à toutes les tailles.
 - **Couleur personnalisable pour le confort seulement.** Le `ColorPicker` change la couleur sous

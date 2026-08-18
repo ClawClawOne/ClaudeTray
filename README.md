@@ -221,6 +221,10 @@ Built by **[TheUnnamedCompany](https://theunnamedcompany.com)**.
 Questions, feedback: [contact@theunnamedcompany.com](mailto:contact@theunnamedcompany.com), or open an
 issue on this repository.
 
+ClaudeTray is free and MIT licensed. If it saves you a few `/usage` runs a day, you can
+[buy me a coffee](https://buymeacoffee.com/theunnamedcompany) — entirely optional, and it changes
+nothing about the app.
+
 ## License
 
 MIT — see [LICENSE](LICENSE). Copyright © 2026 TheUnnamedCompany.

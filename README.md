@@ -1,145 +1,167 @@
 # ClaudeTray
 
-App macOS en barre de menu, SwiftUI natif, zéro dépendance. Affiche l'usage du quota Claude
-(abonnement Max) en temps réel : fenêtre glissante de 5 h, fenêtre hebdomadaire, et les fenêtres
-par modèle quand l'API les renvoie — chacune avec son pourcentage et son compte à rebours.
+Votre quota Claude dans la barre de menu de macOS. Le temps restant avant le reset, le pourcentage
+consommé sur la fenêtre glissante de 5 h, sur la fenêtre hebdomadaire, et sur chaque quota par
+modèle — sans ouvrir de terminal.
 
-## Prérequis : Claude Code connecté
+![ClaudeTray dans la barre de menu](docs/menubar.png)
 
-ClaudeTray lit le token OAuth écrit par **Claude Code**, le client en ligne de commande. C'est un
-prérequis, pas une option : l'app Claude de bureau ne crée pas ce token — elle ne dépose au trousseau
-qu'une clé de chiffrement Electron (`Claude Safe Storage`), inexploitable ici.
+App native SwiftUI, macOS 14+, **zéro dépendance**, une seule connexion sortante, aucune télémétrie.
 
-Sur une machine neuve :
+> Projet indépendant, sans lien avec Anthropic. Il s'appuie sur un endpoint non documenté, celui
+> qu'utilise la commande `/usage` de Claude Code : il peut cesser de fonctionner sans préavis.
+
+## Prérequis : Claude Code installé et connecté
+
+ClaudeTray n'a pas de compte à lui. Il lit le token OAuth déposé par **Claude Code**, le client en
+ligne de commande. Sans lui, l'app n'a aucune source de données et affichera « Aucun token trouvé ».
+
+L'app Claude de bureau ne convient pas : elle ne dépose au trousseau qu'une clé de chiffrement
+Electron (`Claude Safe Storage`), inexploitable ici.
 
 ```bash
 npm install -g @anthropic-ai/claude-code   # ou l'installeur officiel
 claude                                     # puis /login
 ```
 
-**Installer ne suffit pas : c'est la connexion qui écrit l'entrée de trousseau.** Une fois connecté,
-Claude Code n'a plus besoin d'être utilisé — il rafraîchit simplement le token quand il tourne.
-Alternative sans trousseau : `claude setup-token` produit un token d'un an, à coller dans le popover.
+**Installer ne suffit pas : c'est la connexion qui écrit le token.** Une fois connecté, vous n'êtes
+pas obligé d'utiliser Claude Code — il se contente de rafraîchir le token quand il tourne. Si vous
+ne le lancez jamais, le token du trousseau finit par expirer : utilisez alors un token durable,
+`claude setup-token` en produit un valable un an, à coller dans ClaudeTray.
 
-L'app cible un abonnement Claude (vérifiée sur un compte Max). Le comportement de l'endpoint sur les
-autres formules n'a pas été testé.
+Testé sur un abonnement Max. Le comportement sur les autres formules n'a pas été vérifié.
 
-## Ouvrir dans Xcode
+## Installation
 
-Le projet Xcode est généré par [XcodeGen](https://github.com/yonaskolb/XcodeGen) depuis `project.yml`.
-`ClaudeTray.xcodeproj` est déjà présent dans le dépôt : ouvrir directement suffit.
+1. Téléchargez le `.dmg` depuis la page [Releases](../../releases).
+2. Ouvrez-le, glissez **ClaudeTray** dans **Applications**.
+3. Lancez l'app. Elle n'a pas d'icône dans le Dock : elle apparaît dans la barre de menu, en haut à droite.
+4. macOS demande l'autorisation d'accéder au trousseau — c'est la lecture du token de Claude Code.
+   Choisissez **Toujours autoriser** pour ne plus être sollicité.
+
+L'app est signée Developer ID et notarisée par Apple : aucun avertissement Gatekeeper, aucune
+manipulation particulière au premier lancement.
+
+Pour la désinstaller : bouton **Quitter** dans le popover, puis supprimez
+`/Applications/ClaudeTray.app` et le dossier `~/Library/Application Support/ClaudeTray`.
+
+## Utilisation
+
+Cliquez sur l'indicateur dans la barre de menu pour ouvrir le popover : une barre de progression par
+fenêtre de quota, chacune avec son pourcentage et son compte à rebours jusqu'au reset.
+
+Le pourcentage passe en **orange à 80 %** et en **rouge à 95 %**, dans la barre de menu comme dans le
+popover. Une notification locale est envoyée à ces deux seuils, une seule fois par fenêtre, puis
+réarmée au reset suivant.
+
+### Réglages, tous dans le popover
+
+| Réglage | Effet |
+| --- | --- |
+| Rafraîchissement | Auto, 1 min, 5 min, 15 min, 30 min, 1 h |
+| Logo Claude | Affiché ou masqué dans la barre de menu |
+| Fenêtres affichées | Toutes côte à côte, ou une seule métrique au choix |
+| Métrique unique | Fenêtre 5 h, hebdomadaire, ou la plus contrainte des deux |
+| Consommé / restant | Inverse la valeur affichée |
+| Couleur | Huit pastilles pour les pourcentages sous le seuil d'alerte |
+| Espacement | Écart entre les éléments, 2 à 24 pt |
+| Marge extérieure | Marge gauche et droite, 0 à 24 pt |
+| Notifications | Alertes à 80 % et 95 %, activables |
+| Lancement au démarrage | Via `SMAppService` |
+
+En mode **Auto**, l'app interroge l'API toutes les 90 s quand la fenêtre de 5 h est entamée, toutes
+les 7 min sinon. Les comptes à rebours, eux, s'animent en local à la seconde : ils ne coûtent aucune
+requête. Le polling est suspendu en veille et session verrouillée, et reprend au réveil.
+
+### Colonnes affichées
+
+`5H` et `WEEK` viennent des fenêtres principales. Les colonnes supplémentaires — `FABLE`, `OPUS`… —
+correspondent aux quotas par modèle, tels que l'API les nomme. Aucune liste n'est figée dans le
+code : une colonne apparaît si le compte a ce quota, disparaît sinon. Aucune ligne vide n'est laissée.
+
+## Dépannage
+
+| Ce que vous voyez | Cause | Solution |
+| --- | --- | --- |
+| « Aucun token trouvé » | Claude Code absent ou jamais connecté | `claude` puis `/login`, ou collez un token issu de `claude setup-token` |
+| « 401 — token refusé ou expiré » | Token périmé, Claude Code inactif depuis longtemps | Lancez `claude` une fois, ou utilisez un token `setup-token` |
+| « 429 — trop de requêtes » | API sollicitée trop souvent | Rien à faire : l'app ralentit seule, jusqu'à 30 min entre deux essais |
+| « Réponse au format inattendu » | L'endpoint non documenté a changé | Ouvrez une issue ; les dernières données valides restent affichées |
+| « Données obsolètes depuis X » | Aucun appel réussi depuis 15 min | Bouton **Rafraîchir**, ou vérifiez le réseau |
+| La boîte de dialogue du trousseau revient sans cesse | Version non signée, compilée localement | Choisissez **Toujours autoriser**, ou collez un token manuel |
+| Rien dans la barre de menu | Barre saturée | Quittez un autre élément, ou réduisez l'espacement dans les réglages |
+
+Le pied du popover indique en permanence la source du token utilisée, l'heure du dernier
+rafraîchissement réussi et le message d'erreur en cours, s'il y en a un.
+
+## Sécurité et vie privée
+
+- **Une seule connexion sortante**, en HTTPS, vers `api.anthropic.com`. Aucune télémétrie, aucun
+  service tiers, aucune dépendance externe : uniquement des frameworks Apple.
+- **Aucune journalisation.** Le token n'est ni imprimé, ni écrit dans un log, ni inclus dans les
+  messages d'erreur affichés.
+- **Token jamais conservé en mémoire** entre deux appels : il est relu à chaque requête, parce que
+  celui du trousseau expire en une heure environ.
+- **Token manuel en clair sur le disque**, dans `~/Library/Application Support/ClaudeTray/token`,
+  en `0600` dans un dossier `0700`. Le fichier est créé avec ses droits restrictifs avant toute
+  écriture, et ses droits sont resserrés à la lecture s'ils ont dérivé. Qui préfère ne rien écrire
+  sur disque laisse ce champ vide : le trousseau reste alors la seule source.
+- **Sandbox désactivée**, par nécessité : lire le trousseau et `~/.claude` est impossible autrement.
+  Le durcissement d'exécution est actif et aucune exception de signature n'est demandée.
+- **Aucune mise à jour automatique** : l'app ne télécharge et n'exécute jamais de code.
+
+Ordre de résolution du token, à chaque appel :
+
+1. `~/Library/Application Support/ClaudeTray/token` — le token collé dans l'app
+2. Trousseau macOS, service `Claude Code-credentials`
+3. `~/.claude/.credentials.json`, ou `$CLAUDE_CONFIG_DIR/.credentials.json`
+
+## Compiler depuis les sources
+
+Xcode 15+, macOS 14+. Le `.xcodeproj` est généré par [XcodeGen](https://github.com/yonaskolb/XcodeGen)
+depuis `project.yml`, mais il est commité : ouvrir le projet ne demande aucun outil.
 
 ```bash
-open ClaudeTray.xcodeproj
+git clone https://github.com/ClawClawOne/ClaudeTray.git
+cd ClaudeTray
+open ClaudeTray.xcodeproj      # puis ⌘R
 ```
 
-Si `project.yml` est modifié (nouveau fichier, réglage de build) :
+Dans **Signing & Capabilities**, cochez *Automatically manage signing* et choisissez votre équipe.
+Sans équipe, la signature reste ad-hoc et macOS redemandera l'accès au trousseau à chaque rebuild —
+le champ de token manuel du popover sert d'échappatoire.
+
+Après modification de `project.yml` :
 
 ```bash
-brew install xcodegen   # une seule fois
 xcodegen generate
-```
-
-Build en ligne de commande :
-
-```bash
 xcodebuild -project ClaudeTray.xcodeproj -scheme ClaudeTray -configuration Debug build
 ```
 
-### Premier lancement — quoi cliquer
+Le projet compile sans aucun avertissement, et doit le rester.
 
-1. `open ClaudeTray.xcodeproj`
-2. Dans le navigateur de projet (colonne de gauche), sélectionner le projet **ClaudeTray** tout en haut,
-   puis la cible **ClaudeTray** au centre.
-3. Onglet **Signing & Capabilities** : cocher **Automatically manage signing**, et choisir ton
-   compte dans **Team**. Sans équipe, la signature reste ad-hoc et macOS redemandera l'accès au
-   trousseau à chaque rebuild (voir plus bas).
-4. Barre du haut : vérifier que le schéma affiché est **ClaudeTray** et la destination **My Mac**.
-5. **⌘R**.
-
-L'app n'a pas d'icône dans le Dock (`LSUIElement = true`). Elle apparaît dans la barre de menu, en haut
-à droite, sous la forme d'un pourcentage. Cliquer dessus ouvre le popover. Pour l'arrêter : bouton
-**Quitter** dans le popover, ou **⌘.** dans Xcode.
-
-## Autorisation du trousseau au premier lancement
-
-Au premier appel réseau, l'app lit l'entrée de trousseau générique de service `Claude Code-credentials`
-(celle qu'écrit Claude Code) via `SecItemCopyMatching`. macOS affiche alors une boîte de dialogue :
-choisir **Toujours autoriser** pour ne plus être sollicité.
-
-macOS lie cette autorisation à la signature du binaire. Chaque rebuild en signature ad-hoc produit un
-binaire différent et redéclenche la boîte de dialogue. Deux parades :
-
-- signature automatique avec une équipe de développement (étape 3 ci-dessus) ;
-- **token manuel** : bouton « Coller un token manuel » dans le popover. Générer le token avec
-  `claude setup-token` (validité un an), le coller, Enregistrer. Il est stocké en `0600` dans
-  `~/Library/Application Support/ClaudeTray/token` et prend la priorité sur le trousseau. Le bouton
-  « Effacer » revient au trousseau.
-
-Ordre de résolution du token, à chaque appel réseau :
-
-1. `~/Library/Application Support/ClaudeTray/token` (token manuel)
-2. Trousseau macOS, service `Claude Code-credentials`
-3. `~/.claude/.credentials.json` (ou `$CLAUDE_CONFIG_DIR/.credentials.json`)
-
-Le token du trousseau expire en ~1 h et Claude Code le rafraîchit seul : il est relu à chaque appel,
-jamais mis en cache en mémoire.
-
-## Distribuer un DMG
+### Produire un DMG signé et notarisé
 
 ```bash
 ./scripts/make-dmg.sh
 ```
 
-Le script construit en Release, signe l'app avec ton certificat **Developer ID Application**
-(hardened runtime + horodatage), fabrique le DMG avec le lien vers `/Applications`, le signe,
-l'envoie à la notarisation Apple, agrafe le ticket et vérifie le résultat avec `spctl`.
-Sortie dans `dist/ClaudeTray-<version>.dmg`.
+Le script construit en Release, signe avec votre certificat *Developer ID Application*, fabrique le
+DMG, l'envoie à la notarisation Apple, agrafe le ticket et vérifie le tout avec `spctl`. Deux
+préparatifs, une seule fois : un certificat Developer ID installé dans le trousseau, et les
+identifiants de notarisation enregistrés sous un profil nommé.
 
-Deux préparatifs, une seule fois :
+```bash
+xcrun notarytool store-credentials claudetray \
+  --apple-id "vous@exemple.com" --team-id "XXXXXXXXXX" --password "mot-de-passe-pour-application"
+```
 
-1. **Certificat Developer ID Application.** À créer sur developer.apple.com (Certificates,
-   Identifiers & Profiles), puis à installer dans le trousseau. Les certificats *Apple Development*
-   ne conviennent pas : ils ne passent Gatekeeper que sur la machine qui les a émis.
+Le mot de passe est un *mot de passe pour application* créé sur appleid.apple.com. Pour un essai
+local sans notarisation : `SKIP_NOTARIZE=1 ./scripts/make-dmg.sh`.
 
-   ```bash
-   security find-identity -v -p codesigning | grep "Developer ID Application"
-   ```
+## Sous le capot
 
-2. **Identifiants de notarisation**, enregistrés sous un profil du trousseau :
-
-   ```bash
-   xcrun notarytool store-credentials claudetray \
-     --apple-id "ton@email" --team-id "XXXXXXXXXX" --password "mot-de-passe-app"
-   ```
-
-   Le mot de passe est un *mot de passe pour application* créé sur appleid.apple.com, pas celui du
-   compte Apple. Pour utiliser un autre nom de profil : `NOTARY_PROFILE=autre ./scripts/make-dmg.sh`.
-
-Pour un essai local sans notarisation : `SKIP_NOTARIZE=1 ./scripts/make-dmg.sh`. Le DMG produit
-est signé mais sera refusé par Gatekeeper sur une autre machine.
-
-Rappel à faire figurer sur la page de téléchargement : **l'utilisateur doit avoir Claude Code
-installé et connecté** (voir « Prérequis » plus haut), sinon l'app n'a aucune source de token.
-
-## Sécurité et vie privée
-
-- **Une seule connexion sortante**, en HTTPS, vers `api.anthropic.com`. Aucune télémétrie, aucun
-  service tiers, aucune dépendance externe — le code n'utilise que les frameworks Apple.
-- **Aucune journalisation.** Le token n'est ni imprimé, ni écrit dans un fichier de log, ni inclus
-  dans les messages d'erreur affichés.
-- **Token jamais conservé en mémoire** entre deux appels : il est relu à chaque requête.
-- **Token manuel en clair sur le disque**, dans `~/Library/Application Support/ClaudeTray/token`,
-  en `0600` dans un dossier `0700`. C'est le choix du cahier des charges — il sert d'échappatoire
-  quand le trousseau refuse l'accès. Le fichier est créé avec ses droits restrictifs avant toute
-  écriture, et ses droits sont resserrés à la lecture s'ils ont dérivé. Qui préfère ne rien écrire
-  sur disque laisse ce champ vide : le trousseau est alors la seule source.
-- **Sandbox désactivée**, par nécessité : lire le trousseau et `~/.claude` est impossible autrement.
-  En contrepartie, le durcissement d'exécution (hardened runtime) est actif et aucune exception de
-  signature n'est demandée.
-- **Aucun mécanisme de mise à jour automatique** : l'app ne télécharge et n'exécute jamais de code.
-
-## Source de données
+Source de données, la même que `/usage` dans Claude Code :
 
 ```
 GET https://api.anthropic.com/api/oauth/usage
@@ -147,133 +169,45 @@ Authorization: Bearer <access_token>
 anthropic-beta: oauth-2025-04-20
 ```
 
-C'est l'endpoint OAuth non documenté qu'utilise `/usage` dans Claude Code. Le header `anthropic-beta`
-est obligatoire — sans lui, l'API répond 401. Il ne s'agit pas d'une clé API à la consommation :
-`ANTHROPIC_API_KEY` n'apparaît nulle part dans le code et ne fonctionnerait pas ici.
+Le header `anthropic-beta` est obligatoire : sans lui, l'API répond 401. Il ne s'agit pas d'une clé
+API à la consommation — `ANTHROPIC_API_KEY` n'apparaît nulle part et ne fonctionnerait pas ici.
 
-Vérification manuelle :
+L'endpoint étant non documenté, l'app est écrite pour échouer proprement : elle garde le dernier
+instantané valide à l'écran, nomme précisément ce qui a échoué (401, 429, schéma inattendu, réseau)
+et marque les données comme obsolètes au-delà de 15 min. Elle n'invente jamais de date de reset :
+seul `resets_at` est affiché, ou « non communiqué par l'API ».
 
-```bash
-security find-generic-password -s "Claude Code-credentials" -w \
-  | jq -r '.claudeAiOauth.accessToken' \
-  | xargs -I{} curl -s -H "Authorization: Bearer {}" \
-      -H "anthropic-beta: oauth-2025-04-20" \
-      https://api.anthropic.com/api/oauth/usage | jq
-```
+Si l'API change, voici où intervenir :
 
-C'est la **seule** requête sortante de l'app. Aucune télémétrie, aucune dépendance externe.
-
-## Cadence de polling
-
-L'endpoint renvoie des 429 persistants s'il est sollicité trop souvent.
-
-- Mode **Auto** (défaut) : 90 s quand la fenêtre 5 h est entamée (`utilization > 0`), 7 min sinon.
-- Cadence fixe au choix dans les réglages : 1 min, 5 min, 15 min, 30 min, 1 h. Changer la cadence
-  ne déclenche pas d'appel immédiat — le prochain appel est replanifié à partir du dernier.
-- Backoff exponentiel après échec, plafonné à 30 min, et `Retry-After` respecté s'il est présent.
-- Polling suspendu en veille et session verrouillée (`NSWorkspace.willSleep` /
-  `sessionDidResignActive` / `com.apple.screenIsLocked`), repris par un appel immédiat au réveil.
-- Le compte à rebours s'anime localement à 1 s à partir de `resets_at`, sans aucun appel réseau.
-
-## Le jour où ça casse
-
-L'endpoint n'est pas documenté ; il peut changer de forme ou de header sans préavis. L'app ne montre
-jamais 0 % en cas de problème : elle garde le dernier instantané valide à l'écran, ajoute un message
-d'erreur lisible en pied de popover (401, 429, schéma inattendu, réseau) et un marqueur
-« Données obsolètes depuis X » au-delà de 15 min sans succès.
-
-Points à modifier selon le symptôme :
-
-| Symptôme | Où intervenir |
+| Symptôme | Fichier |
 | --- | --- |
-| 401 permanent alors que le token est bon | `UsageAPIClient.betaHeader` — la valeur du header beta a changé |
-| « Réponse au format inattendu » | `RawUsageResponse` dans `Models/UsageModels.swift` — les clés de fenêtres ont changé |
-| Pourcentages ×100 ou ÷100 | `Utilization.normalize` dans `Models/UsageModels.swift` — seul endroit qui décide de l'échelle |
+| 401 permanent avec un token valide | `UsageAPIClient.betaHeader` — la valeur du header beta a changé |
+| « Réponse au format inattendu » | `Models/UsageModels.swift`, `RawUsageResponse` / `RawLimit` |
+| Pourcentages ×100 ou ÷100 | `Utilization.normalize` — seul endroit qui décide de l'échelle |
 | Date de reset non décodée | `UsageAPIClient.decodeISODate` |
-| 429 récurrents | `activeInterval` / `idleInterval` / `maxBackoff` dans `Services/UsageStore.swift` |
+| 429 récurrents | `activeInterval` / `idleInterval` / `maxBackoff` dans `UsageStore.swift` |
 
-## Structure
+Structure du code :
 
 ```
 ClaudeTray/
 ├── ClaudeTrayApp.swift          MenuBarExtra, style .window
-├── Models/UsageModels.swift     décodage brut, normalisation, instantané affichable
+├── Models/UsageModels.swift     décodage, normalisation, instantané affichable
 ├── Services/
 │   ├── TokenResolver.swift      les trois sources de token, dans l'ordre
-│   ├── UsageAPIClient.swift     unique appel réseau, mapping des erreurs, dates ISO
-│   ├── UsageStore.swift         état observable, cadence, backoff, veille, horloge 1 s
-│   ├── NotificationManager.swift  seuils 80 % / 95 %, une fois par fenêtre
+│   ├── UsageAPIClient.swift     unique appel réseau, erreurs, dates ISO
+│   ├── UsageStore.swift         état observable, cadence, backoff, veille
+│   ├── NotificationManager.swift  seuils 80 % / 95 %
 │   └── LaunchAtLogin.swift      SMAppService
-├── Support/Preferences.swift    réglages persistés, seuils
-└── Views/                       barre de menu, popover, ligne de fenêtre, formatage
+├── Support/                     réglages persistés, couleurs
+└── Views/                       barre de menu, popover, formatage
 ```
 
-Le réseau, la résolution du token, le modèle observable et les vues ne se connaissent que par leurs
-interfaces : `UsageStore` est le seul point de contact entre les services et les vues.
+Deux contournements valent d'être connus avant de toucher à l'interface : `MenuBarExtra` ne rend pas
+une vue sur deux lignes (le label est donc rasterisé via `ImageRenderer`), et un `ColorPicker` est
+inutilisable dans un popover de barre de menu (il ouvre `NSColorPanel`, qui referme le popover).
+`CLAUDE.md` détaille ces pièges.
 
-## Réglages (popover)
+## Licence
 
-- Rafraîchissement : Auto, 1 min, 5 min, 15 min, 30 min, 1 h.
-- Barre de menu : les fenêtres côte à côte (5H / WEEK, plus une colonne par modèle limité —
-  FABLE, OPUS… selon ce que renvoie l'API), ou une seule métrique — fenêtre 5 h,
-  hebdomadaire, ou la plus contrainte des deux.
-- Couleur des pourcentages : huit pastilles cliquables (vert par défaut).
-- Logo Claude affiché ou masqué. Masqué, les colonnes gardent la même marge des deux côtés.
-- Espacement entre les éléments de la barre de menu, de 2 à 24 pt (10 pt par défaut).
-- Marge extérieure gauche et droite, de 0 à 24 pt (0 par défaut). À 0, il ne reste que la marge
-  que macOS impose lui-même au bouton de la barre de menu ; l'app n'en ajoute aucune.
-- Afficher le restant plutôt que le consommé.
-- Notifications à 80 % et 95 % de chaque fenêtre, une seule fois par fenêtre, ré-armées au reset.
-- Lancement au démarrage (`SMAppService`).
-
-## Décisions prises seul
-
-- **Échelle de `utilization` : aucune heuristique.** Vérifié sur l'API le 2026-08-18, les valeurs
-  sortent déjà en 0–100 (`31.0`, `33.0`). Une bascule automatique « si ≤ 1 alors ×100 » afficherait
-  100 % pour un usage réel de 1 % — la pire fausse alerte possible, dans le cas le plus fréquent. La
-  conversion reste centralisée dans `Utilization.normalize`, avec la ligne à décommenter si l'API
-  repasse un jour en 0–1.
-- **Barre de menu par défaut : les deux fenêtres.** Logo Claude, puis une colonne « 5h » et une
-  colonne « Week », intitulé au-dessus du pourcentage. Le mode métrique unique reste disponible et
-  utilise alors « la plus contrainte » par défaut — le seul chiffre qui ne peut pas mentir par
-  omission quand une seule des deux fenêtres est proche de la limite.
-- **Label de barre de menu rasterisé.** `MenuBarExtra` ne rend pas une vue composée sur deux
-  lignes : il la réduit à son premier élément. `MenuBarLabel` rend donc sa vue via `ImageRenderer`
-  et fournit une `Image`. Contrepartie assumée : le clair/sombre est résolu à la main
-  (`NSApp.effectiveAppearance`), et le rendu est rafraîchi une fois par seconde.
-- **Logo Claude dessiné en `Path`** (`Views/ClaudeGlyph.swift`), pas en asset : rien à embarquer et
-  rendu net à toutes les tailles.
-- **Pastilles de couleur plutôt qu'un `ColorPicker`.** Le `ColorPicker` ouvre `NSColorPanel`,
-  qui prend le focus et referme aussitôt le popover de la barre de menu : le choix était
-  impossible à valider. Huit pastilles cliquables règlent le problème sans quitter le popover.
-- **Fenêtres par modèle lues dans `limits`.** `seven_day_sonnet` et `seven_day_opus` sont `null`
-  sur ce compte ; le quota par modèle n'existe que dans le tableau `limits`, entrées
-  `kind == "weekly_scoped"`, avec le nom du modèle dans `scope.model.display_name`. La colonne
-  FABLE en vient. Aucune liste de modèles n'est figée dans le code : l'app affiche ce que l'API nomme.
-- **Couleur personnalisable pour le confort seulement.** Le `ColorPicker` change la couleur sous
-  80 % ; les seuils orange 80 % et rouge 95 % ne sont pas modifiables, ce sont eux qui alertent.
-- **Cadence fixe autorisée jusqu'à 1 min.** L'endpoint renvoie des 429 s'il est trop sollicité : en
-  dessous de la minute, aucune option n'est proposée, et le backoff exponentiel plafonné à 30 min
-  s'applique de toute façon par-dessus la cadence choisie.
-- **Fenêtres affichées : celles que l'API renvoie non nulles.** `seven_day_sonnet` et
-  `seven_day_opus` sont donc masquées quand elles valent `null` (c'est le cas sur ce compte).
-  Aucune ligne vide n'est laissée.
-- **Champs ignorés.** La réponse contient aussi `limits`, `spend`, `extra_usage` et une série de
-  clés à noms de code (`nimbus_quill`, `tangelo`, …). Elles ne sont pas décodées : hors périmètre des
-  trois informations demandées, et instables par nature.
-- **Détection du changement de schéma.** Si aucune des quatre fenêtres connues n'est présente dans une
-  réponse 200, l'app lève « format inattendu » plutôt que d'afficher un popover vide.
-- **Obsolescence à 15 min.** Au-delà, le pourcentage de la barre de menu reçoit un marqueur discret et
-  le popover indique depuis combien de temps.
-- **Couleur pilotée par le consommé.** Même en mode « restant », les seuils orange 80 % / rouge 95 %
-  suivent le pourcentage consommé : c'est lui qui porte l'alerte.
-- **Ne survit pas à un reset inventé.** Aucune date de reset n'est calculée localement. Quand
-  `resets_at` est `null`, l'app écrit « Reset non communiqué par l'API ».
-- **Langue de l'interface : français**, alignée sur la langue du cahier des charges.
-- **Projet généré par XcodeGen.** `project.yml` est la source de vérité et se relit en trente
-  secondes ; le `.xcodeproj` est commité pour que l'ouverture dans Xcode ne demande aucun outil.
-
-## Prérequis
-
-macOS 14+, Swift 5.9+, Xcode 15+. Pas de sandbox (lecture du trousseau et de `~/.claude`),
-entitlement client réseau activé, `LSUIElement = true`.
+MIT — voir [LICENSE](LICENSE).

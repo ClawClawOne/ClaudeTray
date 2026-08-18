@@ -61,9 +61,9 @@ struct MenuBarLabel: View {
 
     private func column(title: String, window: UsageWindow?) -> some View {
         // Deux lignes alignées à gauche : intitulé en capitales, pourcentage en dessous.
-        VStack(alignment: .leading, spacing: -1) {
+        VStack(alignment: .leading, spacing: -2.5) {
             Text(title)
-                .font(.system(size: 8.5, weight: .semibold))
+                .font(.system(size: 7.5, weight: .semibold))
                 .kerning(0.2)
                 .foregroundStyle(monochrome.opacity(0.7))
             Text(value(for: window))

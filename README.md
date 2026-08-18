@@ -85,6 +85,43 @@ Ordre de résolution du token, à chaque appel réseau :
 Le token du trousseau expire en ~1 h et Claude Code le rafraîchit seul : il est relu à chaque appel,
 jamais mis en cache en mémoire.
 
+## Distribuer un DMG
+
+```bash
+./scripts/make-dmg.sh
+```
+
+Le script construit en Release, signe l'app avec ton certificat **Developer ID Application**
+(hardened runtime + horodatage), fabrique le DMG avec le lien vers `/Applications`, le signe,
+l'envoie à la notarisation Apple, agrafe le ticket et vérifie le résultat avec `spctl`.
+Sortie dans `dist/ClaudeTray-<version>.dmg`.
+
+Deux préparatifs, une seule fois :
+
+1. **Certificat Developer ID Application.** À créer sur developer.apple.com (Certificates,
+   Identifiers & Profiles), puis à installer dans le trousseau. Les certificats *Apple Development*
+   ne conviennent pas : ils ne passent Gatekeeper que sur la machine qui les a émis.
+
+   ```bash
+   security find-identity -v -p codesigning | grep "Developer ID Application"
+   ```
+
+2. **Identifiants de notarisation**, enregistrés sous un profil du trousseau :
+
+   ```bash
+   xcrun notarytool store-credentials claudetray \
+     --apple-id "ton@email" --team-id "XXXXXXXXXX" --password "mot-de-passe-app"
+   ```
+
+   Le mot de passe est un *mot de passe pour application* créé sur appleid.apple.com, pas celui du
+   compte Apple. Pour utiliser un autre nom de profil : `NOTARY_PROFILE=autre ./scripts/make-dmg.sh`.
+
+Pour un essai local sans notarisation : `SKIP_NOTARIZE=1 ./scripts/make-dmg.sh`. Le DMG produit
+est signé mais sera refusé par Gatekeeper sur une autre machine.
+
+Rappel à faire figurer sur la page de téléchargement : **l'utilisateur doit avoir Claude Code
+installé et connecté** (voir « Prérequis » plus haut), sinon l'app n'a aucune source de token.
+
 ## Source de données
 
 ```

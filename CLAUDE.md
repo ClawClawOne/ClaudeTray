@@ -68,6 +68,9 @@ xcodebuild -project ClaudeTray.xcodeproj -scheme ClaudeTray -configuration Debug
 
 Le projet doit compiler **sans aucun avertissement**. C'est le cas aujourd'hui, ça doit le rester.
 
+Distribution : `./scripts/make-dmg.sh` (Release, signature Developer ID, DMG, notarisation,
+agrafage). Voir la section « Distribuer un DMG » du README pour les deux préparatifs.
+
 ## Langue
 
 Interface, commentaires de code et messages de commit en français. Les termes techniques, noms

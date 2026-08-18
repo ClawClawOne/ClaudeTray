@@ -61,8 +61,9 @@ struct MenuBarLabel: View {
                     .foregroundStyle(monochrome.opacity(0.6))
             }
         }
-        // Marge identique à gauche et à droite, logo affiché ou non.
-        .padding(.horizontal, 2)
+        // Marges extérieures alignées sur l'espacement interne : un seul réglage pilote tout,
+        // et l'ensemble reste symétrique, logo affiché ou non.
+        .padding(.horizontal, store.itemSpacing)
         .frame(height: 22)
         .fixedSize()
     }

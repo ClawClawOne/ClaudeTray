@@ -8,6 +8,12 @@ Le cahier des charges d'origine est dans `ClaudeTray.md`. Le README couvre l'ins
 la signature et les décisions de conception. Ce fichier ne répète ni l'un ni l'autre : il liste
 ce qui casse si on l'ignore.
 
+## Prérequis utilisateur
+
+Claude Code installé **et connecté** (`claude` puis `/login`) : c'est la connexion, pas
+l'installation, qui écrit l'entrée de trousseau `Claude Code-credentials`. L'app Claude de bureau
+ne convient pas — elle ne dépose qu'une clé Electron `Claude Safe Storage`, inexploitable ici.
+
 ## Règles à ne pas enfreindre
 
 - **Une seule requête sortante**, vers `https://api.anthropic.com/api/oauth/usage`. Aucune

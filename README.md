@@ -4,6 +4,26 @@ App macOS en barre de menu, SwiftUI natif, zéro dépendance. Affiche l'usage du
 (abonnement Max) en temps réel : fenêtre glissante de 5 h, fenêtre hebdomadaire, et les fenêtres
 par modèle quand l'API les renvoie — chacune avec son pourcentage et son compte à rebours.
 
+## Prérequis : Claude Code connecté
+
+ClaudeTray lit le token OAuth écrit par **Claude Code**, le client en ligne de commande. C'est un
+prérequis, pas une option : l'app Claude de bureau ne crée pas ce token — elle ne dépose au trousseau
+qu'une clé de chiffrement Electron (`Claude Safe Storage`), inexploitable ici.
+
+Sur une machine neuve :
+
+```bash
+npm install -g @anthropic-ai/claude-code   # ou l'installeur officiel
+claude                                     # puis /login
+```
+
+**Installer ne suffit pas : c'est la connexion qui écrit l'entrée de trousseau.** Une fois connecté,
+Claude Code n'a plus besoin d'être utilisé — il rafraîchit simplement le token quand il tourne.
+Alternative sans trousseau : `claude setup-token` produit un token d'un an, à coller dans le popover.
+
+L'app cible un abonnement Claude (vérifiée sur un compte Max). Le comportement de l'endpoint sur les
+autres formules n'a pas été testé.
+
 ## Ouvrir dans Xcode
 
 Le projet Xcode est généré par [XcodeGen](https://github.com/yonaskolb/XcodeGen) depuis `project.yml`.

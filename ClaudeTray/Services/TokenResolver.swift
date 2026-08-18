@@ -29,7 +29,7 @@ enum TokenError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .notFound:
-            return "Aucun token trouvé. Colle un token manuel (issu de « claude setup-token ») ou lance Claude Code pour peupler le trousseau."
+            return "Aucun token trouvé. ClaudeTray a besoin de Claude Code installé et connecté : lance « claude » dans le Terminal puis « /login ». Sinon, colle ici un token issu de « claude setup-token »."
         case .keychainDenied(let status):
             let message = SecCopyErrorMessageString(status, nil) as String? ?? "code \(status)"
             return "Accès au trousseau refusé (\(message)). Autorise ClaudeTray, ou colle un token manuel."

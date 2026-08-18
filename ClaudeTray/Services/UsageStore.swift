@@ -25,6 +25,10 @@ final class UsageStore: ObservableObject {
     @Published var showRemaining: Bool {
         didSet { defaults.set(showRemaining, forKey: PreferenceKey.showRemaining) }
     }
+    /// Espacement entre les éléments de la barre de menu, en points.
+    @Published var itemSpacing: Double {
+        didSet { defaults.set(itemSpacing, forKey: PreferenceKey.itemSpacing) }
+    }
     /// Cadence de rafraîchissement. Le changement est appliqué sans déclencher
     /// d'appel immédiat : le prochain appel est replanifié à partir du dernier.
     @Published var refreshInterval: RefreshInterval {
@@ -78,6 +82,8 @@ final class UsageStore: ObservableObject {
         metric = MenuBarMetric(rawValue: storedMetric) ?? .mostConstrained
         showRemaining = defaults.bool(forKey: PreferenceKey.showRemaining)
         showBothWindows = defaults.object(forKey: PreferenceKey.showBothWindows) as? Bool ?? true
+        itemSpacing = defaults.object(forKey: PreferenceKey.itemSpacing) as? Double
+            ?? MenuBarLayout.defaultSpacing
         refreshInterval = RefreshInterval(rawValue: defaults.string(forKey: PreferenceKey.refreshInterval) ?? "")
             ?? .auto
         percentColor = ColorStorage.color(fromHex: defaults.string(forKey: PreferenceKey.percentColor))

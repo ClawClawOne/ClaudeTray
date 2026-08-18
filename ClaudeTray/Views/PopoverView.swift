@@ -78,6 +78,17 @@ struct PopoverView: View {
             .disabled(store.showBothWindows)
 
             HStack {
+                Text("Espacement")
+                Slider(value: $store.itemSpacing,
+                       in: MenuBarLayout.minimumSpacing...MenuBarLayout.maximumSpacing,
+                       step: 1)
+                Text("\(Int(store.itemSpacing)) pt")
+                    .monospacedDigit()
+                    .frame(width: 32, alignment: .trailing)
+            }
+            .controlSize(.small)
+
+            HStack {
                 ColorPicker("Couleur des pourcentages", selection: $store.percentColor, supportsOpacity: false)
                 Button("Défaut") { store.percentColor = ColorStorage.defaultPercentColor }
                     .controlSize(.small)

@@ -143,6 +143,7 @@ interfaces : `UsageStore` est le seul point de contact entre les services et les
 - Barre de menu : les deux fenêtres côte à côte (5h / Week), ou une seule métrique — fenêtre 5 h,
   hebdomadaire, ou la plus contrainte des deux.
 - Couleur des pourcentages, avec bouton « Défaut » pour revenir au vert.
+- Espacement des éléments de la barre de menu, de 2 à 24 pt (10 pt par défaut).
 - Afficher le restant plutôt que le consommé.
 - Notifications à 80 % et 95 % de chaque fenêtre, une seule fois par fenêtre, ré-armées au reset.
 - Lancement au démarrage (`SMAppService`).

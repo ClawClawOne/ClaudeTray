@@ -67,7 +67,15 @@ enum PreferenceKey {
     static let showBothWindows = "showBothWindows"
     static let percentColor = "percentColorHex"
     static let refreshInterval = "refreshInterval"
+    static let itemSpacing = "itemSpacing"
     static let notificationsEnabled = "notificationsEnabled"
+}
+
+enum MenuBarLayout {
+    /// Espacement horizontal entre le logo et les colonnes, et entre les colonnes.
+    static let defaultSpacing: Double = 10
+    static let minimumSpacing: Double = 2
+    static let maximumSpacing: Double = 24
 }
 
 enum Thresholds {

@@ -36,7 +36,7 @@ struct MenuBarLabel: View {
     }
 
     private var content: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: store.itemSpacing) {
             ClaudeGlyph()
                 .fill(monochrome)
                 .frame(width: 14, height: 14)
@@ -60,17 +60,19 @@ struct MenuBarLabel: View {
     }
 
     private func column(title: String, window: UsageWindow?) -> some View {
-        VStack(alignment: .center, spacing: 0) {
+        // Deux lignes alignées à gauche : intitulé en capitales, pourcentage en dessous.
+        VStack(alignment: .leading, spacing: -1) {
             Text(title)
-                .font(.system(size: 8, weight: .semibold))
-                .kerning(0.4)
-                .foregroundStyle(monochrome.opacity(0.75))
+                .font(.system(size: 8.5, weight: .semibold))
+                .kerning(0.2)
+                .foregroundStyle(monochrome.opacity(0.7))
             Text(value(for: window))
-                .font(.system(size: 11, weight: .bold, design: .rounded))
+                .font(.system(size: 11, weight: .bold))
                 .foregroundStyle(color(for: window))
                 .monospacedDigit()
         }
         .fixedSize()
+        .frame(alignment: .leading)
     }
 
     // MARK: - Valeurs

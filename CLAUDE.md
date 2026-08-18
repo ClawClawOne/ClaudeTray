@@ -4,9 +4,12 @@ App macOS en barre de menu, SwiftUI natif, macOS 14+, **zéro dépendance extern
 Elle affiche l'usage du quota Claude (abonnement Max) : fenêtre 5 h, fenêtre hebdomadaire,
 et une colonne par modèle limité (FABLE, OPUS… selon ce que renvoie l'API).
 
-Le cahier des charges d'origine est dans `ClaudeTray.md`. Le README couvre l'installation,
-la signature et les décisions de conception. Ce fichier ne répète ni l'un ni l'autre : il liste
-ce qui casse si on l'ignore.
+Version courante : **1.1**. Dépôt public sous licence MIT, releases sur GitHub.
+
+Le cahier des charges d'origine est dans `ClaudeTray.md`. Le `README.md` — rédigé en anglais, il
+s'adresse aux utilisateurs — couvre l'installation, la signature et les décisions de conception.
+`CHANGELOG.md` sert de notes de release. Ce fichier ne répète aucun des trois : il liste ce qui
+casse si on l'ignore.
 
 ## Prérequis utilisateur
 
@@ -29,6 +32,34 @@ ne convient pas — elle ne dépose qu'une clé Electron `Claude Safe Storage`, 
 - **Respecter la cadence.** L'endpoint renvoie des 429 persistants s'il est trop sollicité :
   90 s / 7 min en mode Auto, backoff exponentiel plafonné à 30 min, `Retry-After` prioritaire.
   Aucune option en dessous de la minute.
+- **Toute chaîne visible passe par `Loc`.** Aucune chaîne d'interface écrite en dur dans une vue :
+  cinq langues sont maintenues, et une chaîne oubliée est une régression visible.
+- **Le token manuel s'écrit en 0600 avant de recevoir la moindre donnée.** Ne jamais revenir à
+  `write(options: .atomic)` suivi d'un `chmod` : cette séquence expose le token entre les deux.
+
+## Localisation
+
+Anglais, français, allemand, espagnol, italien. Tout est dans `Support/Localization.swift` :
+
+- `AppLanguage` — les six choix du sélecteur, `system` compris ; `resolved` fait correspondre les
+  préférences macOS à une langue prise en charge, anglais par repli.
+- `Loc` — une propriété calculée par chaîne, chacune appelant `p(en, fr, de, es, it)`. Ajouter une
+  chaîne oblige donc à fournir les cinq traductions, et le compilateur refuse un oubli.
+
+Pas de fichiers `.lproj` : `NSLocalizedString` fige la langue au lancement, alors que le sélecteur
+doit s'appliquer immédiatement. Conséquences à garder en tête :
+
+- Les vues lisent `store.loc`, jamais `Loc(...)` directement — sinon le changement de langue ne les
+  redessine pas.
+- Les erreurs ne portent pas de texte : `UsageAPIError` et `TokenError` exposent `message(_ loc:)`,
+  et `UsageStore` stocke l'erreur, pas sa traduction. Une erreur affichée se retraduit donc toute
+  seule quand la langue change.
+- Les formateurs de date sont construits à la demande avec `loc.locale`, jamais mis en cache dans un
+  `static let` verrouillé sur une locale.
+- `5H` et `WEEK` restent en anglais dans la barre de menu : ce sont des abréviations universelles, et
+  les traduire ferait varier la largeur de l'indicateur d'une langue à l'autre.
+- Ajouter une langue : une valeur dans `AppLanguage`, son `nativeName`, son `localeIdentifier`, son
+  préfixe dans `resolved`, un argument à `p(...)`. Le compilateur signale ensuite chaque chaîne à traduire.
 
 ## Pièges déjà rencontrés
 
@@ -55,6 +86,9 @@ ne convient pas — elle ne dépose qu'une clé Electron `Claude Safe Storage`, 
 | Sources du token | `Services/TokenResolver.swift` |
 | Cadence, backoff, veille | `Services/UsageStore.swift` |
 | Rendu de la barre de menu | `Views/MenuBarLabel.swift` |
+| Traductions, langues | `Support/Localization.swift` |
+| Réglages persistés | `Support/Preferences.swift` (clés) et `Services/UsageStore.swift` (état) |
+| Palette de couleurs | `Support/ColorStorage.swift` |
 
 ## Build
 
@@ -68,10 +102,27 @@ xcodebuild -project ClaudeTray.xcodeproj -scheme ClaudeTray -configuration Debug
 
 Le projet doit compiler **sans aucun avertissement**. C'est le cas aujourd'hui, ça doit le rester.
 
-Distribution : `./scripts/make-dmg.sh` (Release, signature Developer ID, DMG, notarisation,
-agrafage). Voir la section « Distribuer un DMG » du README pour les deux préparatifs.
+## Publier une version
 
-## Langue
+1. Bump `MARKETING_VERSION` et `CURRENT_PROJECT_VERSION` dans `project.yml`, puis `xcodegen generate`.
+2. Entrée en tête de `CHANGELOG.md` — c'est ce fichier qui sert de notes de release.
+3. `./scripts/make-dmg.sh` : Release, signature Developer ID, DMG, notarisation, agrafage,
+   vérification `spctl`. Compter quelques minutes de file d'attente chez Apple.
+4. `gh release create vX.Y dist/ClaudeTray-X.Y.dmg --title "…" --notes-file CHANGELOG.md`.
 
-Interface, commentaires de code et messages de commit en français. Les termes techniques, noms
-d'API et chaînes d'erreur restent tels quels.
+Le script échoue proprement s'il manque le certificat *Developer ID Application* ou le profil de
+notarisation (`xcrun notarytool store-credentials claudetray …`). `SKIP_NOTARIZE=1` s'arrête après
+le DMG signé, pour un essai local.
+
+`dist/` et `build/` sont ignorés par git. Les captures du README vivent dans `docs/`
+(`menubar.png`, `popover.png`) : les regénérer si l'interface change visiblement.
+
+## Conventions
+
+- **Commentaires de code et messages de commit en français.** Les termes techniques, noms d'API et
+  chaînes d'erreur restent tels quels.
+- **Documentation destinée aux utilisateurs en anglais** : `README.md`, `CHANGELOG.md`, notes de
+  release, description du dépôt.
+- **Interface : les cinq langues, jamais de chaîne en dur.** Voir la section Localisation.
+- Le lien de soutien (`buymeacoffee.com/theunnamedcompany`) figure dans le README et dans
+  `.github/FUNDING.yml`. L'app elle-même n'en parle pas et ne doit pas en parler.

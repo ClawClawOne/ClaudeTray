@@ -8,13 +8,14 @@ struct MenuBarLabel: View {
 
     var body: some View {
         HStack(spacing: 6) {
+            // Monochrome : suit l'apparence de la barre de menu (blanc en thème sombre).
             ClaudeGlyph()
-                .fill(Color.claudeOrange)
+                .fill(Color.primary)
                 .frame(width: 13, height: 13)
 
             if store.showBothWindows {
-                column(title: "5h", window: store.snapshot?.window(.fiveHour))
-                column(title: "Week", window: store.snapshot?.window(.sevenDay))
+                column(title: "5H", window: store.snapshot?.window(.fiveHour))
+                column(title: "WEEK", window: store.snapshot?.window(.sevenDay))
             } else {
                 column(title: store.metric.compactLabel, window: store.menuBarWindow)
             }
@@ -31,6 +32,7 @@ struct MenuBarLabel: View {
         VStack(alignment: .center, spacing: -1) {
             Text(title)
                 .font(.system(size: 7.5, weight: .semibold))
+                .kerning(0.3)
                 .foregroundStyle(.secondary)
             Text(value(for: window))
                 .font(.system(size: 10.5, weight: .bold, design: .rounded))

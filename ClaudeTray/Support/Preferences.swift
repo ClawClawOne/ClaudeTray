@@ -11,9 +11,9 @@ enum MenuBarMetric: String, CaseIterable, Identifiable {
     /// Intitulé court affiché au-dessus du pourcentage dans la barre de menu.
     var compactLabel: String {
         switch self {
-        case .fiveHour: return "5h"
-        case .weekly: return "Week"
-        case .mostConstrained: return "Max"
+        case .fiveHour: return "5H"
+        case .weekly: return "WEEK"
+        case .mostConstrained: return "MAX"
         }
     }
 

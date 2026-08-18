@@ -208,6 +208,12 @@ une vue sur deux lignes (le label est donc rasterisé via `ImageRenderer`), et u
 inutilisable dans un popover de barre de menu (il ouvre `NSColorPanel`, qui referme le popover).
 `CLAUDE.md` détaille ces pièges.
 
+## Auteur
+
+Développé par **[TheUnnamedCompany](https://theunnamedcompany.com)**.
+Questions, retours : [contact@theunnamedcompany.com](mailto:contact@theunnamedcompany.com), ou une
+issue sur ce dépôt.
+
 ## Licence
 
-MIT — voir [LICENSE](LICENSE).
+MIT — voir [LICENSE](LICENSE). Copyright © 2026 TheUnnamedCompany.

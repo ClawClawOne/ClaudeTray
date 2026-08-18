@@ -1,5 +1,7 @@
 # Journal des modifications
 
+[ClaudeTray](https://github.com/ClawClawOne/ClaudeTray) — [TheUnnamedCompany](https://theunnamedcompany.com)
+
 ## 1.0 — 18 août 2026
 
 Première version.

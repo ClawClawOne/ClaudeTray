@@ -1,4 +1,5 @@
 import AppKit
+import SwiftUI
 import Combine
 import Foundation
 
@@ -24,6 +25,22 @@ final class UsageStore: ObservableObject {
     @Published var showRemaining: Bool {
         didSet { defaults.set(showRemaining, forKey: PreferenceKey.showRemaining) }
     }
+    /// Cadence de rafraîchissement. Le changement est appliqué sans déclencher
+    /// d'appel immédiat : le prochain appel est replanifié à partir du dernier.
+    @Published var refreshInterval: RefreshInterval {
+        didSet {
+            defaults.set(refreshInterval.rawValue, forKey: PreferenceKey.refreshInterval)
+            reschedule()
+        }
+    }
+    /// Couleur des pourcentages sous les seuils d'alerte.
+    @Published var percentColor: Color {
+        didSet { defaults.set(ColorStorage.hex(from: percentColor), forKey: PreferenceKey.percentColor) }
+    }
+    /// Barre de menu : les deux fenêtres côte à côte, ou la seule métrique choisie.
+    @Published var showBothWindows: Bool {
+        didSet { defaults.set(showBothWindows, forKey: PreferenceKey.showBothWindows) }
+    }
     @Published var notificationsEnabled: Bool {
         didSet {
             defaults.set(notificationsEnabled, forKey: PreferenceKey.notificationsEnabled)
@@ -48,6 +65,7 @@ final class UsageStore: ObservableObject {
     private var pollTask: Task<Void, Never>?
     private var tickTimer: Timer?
     private var consecutiveFailures = 0
+    private var lastAttempt: Date?
     private var pendingRetryAfter: TimeInterval?
 
     // Cadences imposées par l'endpoint : il renvoie des 429 persistants s'il est sollicité trop souvent.
@@ -59,6 +77,11 @@ final class UsageStore: ObservableObject {
         let storedMetric = defaults.string(forKey: PreferenceKey.metric) ?? MenuBarMetric.mostConstrained.rawValue
         metric = MenuBarMetric(rawValue: storedMetric) ?? .mostConstrained
         showRemaining = defaults.bool(forKey: PreferenceKey.showRemaining)
+        showBothWindows = defaults.object(forKey: PreferenceKey.showBothWindows) as? Bool ?? true
+        refreshInterval = RefreshInterval(rawValue: defaults.string(forKey: PreferenceKey.refreshInterval) ?? "")
+            ?? .auto
+        percentColor = ColorStorage.color(fromHex: defaults.string(forKey: PreferenceKey.percentColor))
+            ?? ColorStorage.defaultPercentColor
         notificationsEnabled = defaults.object(forKey: PreferenceKey.notificationsEnabled) as? Bool ?? true
         launchAtLogin = LaunchAtLogin.isEnabled
 
@@ -100,17 +123,28 @@ final class UsageStore: ObservableObject {
         startPolling()
     }
 
-    private func startPolling() {
+    private func startPolling(initialDelay: TimeInterval = 0) {
         pollTask?.cancel()
         isPaused = false
         pollTask = Task { [weak self] in
+            var delay = initialDelay
             while !Task.isCancelled {
+                if delay > 0 {
+                    try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+                    if Task.isCancelled { return }
+                }
                 guard let self else { return }
                 await self.fetchOnce()
-                let delay = self.nextDelay()
-                try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+                delay = self.nextDelay()
             }
         }
+    }
+
+    /// Replanifie sans rappeler l'API tout de suite : on décompte depuis la dernière tentative.
+    private func reschedule() {
+        guard !isPaused else { return }
+        let elapsed = lastAttempt.map { Date().timeIntervalSince($0) } ?? .greatestFiniteMagnitude
+        startPolling(initialDelay: max(0, nextDelay() - elapsed))
     }
 
     private func suspendPolling() {
@@ -120,6 +154,7 @@ final class UsageStore: ObservableObject {
     }
 
     private func fetchOnce() async {
+        lastAttempt = Date()
         isRefreshing = true
         defer { isRefreshing = false }
         do {
@@ -147,7 +182,9 @@ final class UsageStore: ObservableObject {
     /// et `Retry-After` prioritaire s'il est plus long que le délai calculé.
     private func nextDelay() -> TimeInterval {
         let base: TimeInterval
-        if let fiveHour = snapshot?.window(.fiveHour), fiveHour.percentUsed > 0 {
+        if let fixed = refreshInterval.seconds {
+            base = fixed
+        } else if let fiveHour = snapshot?.window(.fiveHour), fiveHour.percentUsed > 0 {
             base = activeInterval
         } else {
             base = idleInterval

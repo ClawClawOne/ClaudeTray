@@ -12,7 +12,10 @@ struct PopoverView: View {
             if let snapshot = store.snapshot, !snapshot.windows.isEmpty {
                 VStack(alignment: .leading, spacing: 12) {
                     ForEach(snapshot.windows) { window in
-                        UsageRowView(window: window, now: store.now, showRemaining: store.showRemaining)
+                        UsageRowView(window: window,
+                                     now: store.now,
+                                     showRemaining: store.showRemaining,
+                                     baseColor: store.percentColor)
                     }
                 }
             } else {
@@ -34,6 +37,9 @@ struct PopoverView: View {
 
     private var header: some View {
         HStack {
+            ClaudeGlyph()
+                .fill(Color.claudeOrange)
+                .frame(width: 14, height: 14)
             Text("ClaudeTray")
                 .font(.system(size: 13, weight: .bold))
             Spacer()
@@ -52,13 +58,30 @@ struct PopoverView: View {
 
     private var settings: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Picker("Barre de menu", selection: $store.metric) {
+            Picker("Rafraîchissement", selection: $store.refreshInterval) {
+                ForEach(RefreshInterval.allCases) { interval in
+                    Text(interval.label).tag(interval)
+                }
+            }
+            .pickerStyle(.menu)
+            .controlSize(.small)
+
+            Toggle("Barre de menu : afficher 5 h et hebdo", isOn: $store.showBothWindows)
+
+            Picker("Métrique unique", selection: $store.metric) {
                 ForEach(MenuBarMetric.allCases) { metric in
                     Text(metric.label).tag(metric)
                 }
             }
             .pickerStyle(.menu)
             .controlSize(.small)
+            .disabled(store.showBothWindows)
+
+            HStack {
+                ColorPicker("Couleur des pourcentages", selection: $store.percentColor, supportsOpacity: false)
+                Button("Défaut") { store.percentColor = ColorStorage.defaultPercentColor }
+                    .controlSize(.small)
+            }
 
             Toggle("Afficher le restant plutôt que le consommé", isOn: $store.showRemaining)
             Toggle("Notifications à 80 % et 95 %", isOn: $store.notificationsEnabled)

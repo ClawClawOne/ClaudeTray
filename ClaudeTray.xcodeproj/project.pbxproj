@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		003C9728243EAEFF50551F6A /* PopoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCE79B03AB22626547C4A7EE /* PopoverView.swift */; };
 		09296CD0B1476B50EE98256D /* UsageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 405A7572734DF3D8CBE2F9B2 /* UsageStore.swift */; };
+		2E3E86DA4EF568D027A24605 /* ClaudeGlyph.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0EE4782AC0DA9E75E46523 /* ClaudeGlyph.swift */; };
 		35E9EEBBFF473F3BBD738455 /* UsageRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A8B93761A5E2BBB20C62105 /* UsageRowView.swift */; };
 		465DD7C8880B88673B574DB8 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58894594E9E075A2D0974B0C /* NotificationManager.swift */; };
 		4B78D46B99F1F1E91660A783 /* Formatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A0A2290A80EDD0802B00B63 /* Formatting.swift */; };
@@ -17,6 +18,7 @@
 		743D403178771F295795F52D /* MenuBarLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B04ADE132CE26DC74A62C433 /* MenuBarLabel.swift */; };
 		8B3BE695BA09459B9E3AF582 /* UsageModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1C18961713971167AA01241 /* UsageModels.swift */; };
 		8F2B18024E78450D1ECB30CE /* LaunchAtLogin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D25F635BD026F50C0DA039 /* LaunchAtLogin.swift */; };
+		90651053490A89911C12FF70 /* ColorStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C5B9BBF5F7D5D9A19867EE /* ColorStorage.swift */; };
 		C613177453FE20BD17259EAB /* ClaudeTrayApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 390BDCA572F35E6306B8157A /* ClaudeTrayApp.swift */; };
 		F4BF9B9DA2BEA73D81A5A78C /* UsageAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = E95EA5DA2E25FA80744F6E2C /* UsageAPIClient.swift */; };
 /* End PBXBuildFile section */
@@ -26,6 +28,7 @@
 		390BDCA572F35E6306B8157A /* ClaudeTrayApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeTrayApp.swift; sourceTree = "<group>"; };
 		405A7572734DF3D8CBE2F9B2 /* UsageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageStore.swift; sourceTree = "<group>"; };
 		58894594E9E075A2D0974B0C /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
+		5D0EE4782AC0DA9E75E46523 /* ClaudeGlyph.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeGlyph.swift; sourceTree = "<group>"; };
 		8A8B93761A5E2BBB20C62105 /* UsageRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageRowView.swift; sourceTree = "<group>"; };
 		94D25F635BD026F50C0DA039 /* LaunchAtLogin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLogin.swift; sourceTree = "<group>"; };
 		AA267DD7F2F0103EF344D7A9 /* TokenResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenResolver.swift; sourceTree = "<group>"; };
@@ -34,6 +37,7 @@
 		D1C18961713971167AA01241 /* UsageModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageModels.swift; sourceTree = "<group>"; };
 		D95646B913A2BB8B438E5DFD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		E144954C5045CA2A8C53A1BD /* ClaudeTray.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ClaudeTray.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E2C5B9BBF5F7D5D9A19867EE /* ColorStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorStorage.swift; sourceTree = "<group>"; };
 		E95EA5DA2E25FA80744F6E2C /* UsageAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageAPIClient.swift; sourceTree = "<group>"; };
 		F313BC92B0FFD810D094F4C3 /* ClaudeTray.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ClaudeTray.entitlements; sourceTree = "<group>"; };
 		FCE79B03AB22626547C4A7EE /* PopoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverView.swift; sourceTree = "<group>"; };
@@ -54,6 +58,7 @@
 		5D74FBB8C131CF16BC2EDA5F /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				5D0EE4782AC0DA9E75E46523 /* ClaudeGlyph.swift */,
 				2A0A2290A80EDD0802B00B63 /* Formatting.swift */,
 				B04ADE132CE26DC74A62C433 /* MenuBarLabel.swift */,
 				FCE79B03AB22626547C4A7EE /* PopoverView.swift */,
@@ -103,6 +108,7 @@
 		F6B016B1B385B076CC4F8D78 /* Support */ = {
 			isa = PBXGroup;
 			children = (
+				E2C5B9BBF5F7D5D9A19867EE /* ColorStorage.swift */,
 				94D25F635BD026F50C0DA039 /* LaunchAtLogin.swift */,
 				AEED7C6194999679F4A4BE48 /* Preferences.swift */,
 			);
@@ -167,7 +173,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2E3E86DA4EF568D027A24605 /* ClaudeGlyph.swift in Sources */,
 				C613177453FE20BD17259EAB /* ClaudeTrayApp.swift in Sources */,
+				90651053490A89911C12FF70 /* ColorStorage.swift in Sources */,
 				4B78D46B99F1F1E91660A783 /* Formatting.swift in Sources */,
 				8F2B18024E78450D1ECB30CE /* LaunchAtLogin.swift in Sources */,
 				743D403178771F295795F52D /* MenuBarLabel.swift in Sources */,

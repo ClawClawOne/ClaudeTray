@@ -1,14 +1,24 @@
 import SwiftUI
 
-/// Affichage compact dans la barre de menu : un pourcentage, plus un point discret si périmé.
+/// Barre de menu : logo Claude, puis une colonne par fenêtre — intitulé au-dessus,
+/// pourcentage en dessous. Hauteur contrainte à celle de la barre (~22 pt),
+/// d'où les corps de police fixes et l'interligne nul.
 struct MenuBarLabel: View {
     @ObservedObject var store: UsageStore
 
     var body: some View {
-        HStack(spacing: 3) {
-            Text(text)
-                .font(.system(size: 12, weight: .medium, design: .rounded))
-                .foregroundStyle(color)
+        HStack(spacing: 6) {
+            ClaudeGlyph()
+                .fill(Color.claudeOrange)
+                .frame(width: 13, height: 13)
+
+            if store.showBothWindows {
+                column(title: "5h", window: store.snapshot?.window(.fiveHour))
+                column(title: "Week", window: store.snapshot?.window(.sevenDay))
+            } else {
+                column(title: store.metric.compactLabel, window: store.menuBarWindow)
+            }
+
             if store.isStale || store.snapshot == nil {
                 Image(systemName: "exclamationmark.circle")
                     .font(.system(size: 9))
@@ -17,15 +27,27 @@ struct MenuBarLabel: View {
         }
     }
 
-    private var text: String {
-        guard let window = store.menuBarWindow else { return "—" }
-        let value = store.showRemaining ? window.percentRemaining : window.percentUsed
-        return UsageFormatting.percent(value)
+    private func column(title: String, window: UsageWindow?) -> some View {
+        VStack(alignment: .center, spacing: -1) {
+            Text(title)
+                .font(.system(size: 7.5, weight: .semibold))
+                .foregroundStyle(.secondary)
+            Text(value(for: window))
+                .font(.system(size: 10.5, weight: .bold, design: .rounded))
+                .foregroundStyle(color(for: window))
+                .monospacedDigit()
+        }
+        .fixedSize()
     }
 
-    private var color: Color {
-        guard let window = store.menuBarWindow else { return .secondary }
+    private func value(for window: UsageWindow?) -> String {
+        guard let window else { return "—" }
+        return UsageFormatting.percentCompact(store.showRemaining ? window.percentRemaining : window.percentUsed)
+    }
+
+    private func color(for window: UsageWindow?) -> Color {
+        guard let window else { return .secondary }
         // La couleur suit toujours le consommé, même quand le restant est affiché.
-        return UsageFormatting.color(forPercentUsed: window.percentUsed)
+        return UsageFormatting.color(forPercentUsed: window.percentUsed, base: store.percentColor)
     }
 }

@@ -5,6 +5,7 @@ struct UsageRowView: View {
     let window: UsageWindow
     let now: Date
     let showRemaining: Bool
+    let baseColor: Color
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -14,12 +15,12 @@ struct UsageRowView: View {
                 Spacer()
                 Text(UsageFormatting.percent(showRemaining ? window.percentRemaining : window.percentUsed))
                     .font(.system(size: 12, weight: .medium, design: .rounded))
-                    .foregroundStyle(UsageFormatting.color(forPercentUsed: window.percentUsed))
+                    .foregroundStyle(UsageFormatting.color(forPercentUsed: window.percentUsed, base: baseColor))
             }
 
             ProgressView(value: window.percentUsed, total: 100)
                 .progressViewStyle(.linear)
-                .tint(UsageFormatting.barColor(forPercentUsed: window.percentUsed))
+                .tint(UsageFormatting.color(forPercentUsed: window.percentUsed, base: baseColor))
 
             // Aucun reset n'est calculé localement : on n'affiche que ce que l'API renvoie.
             if let resetsAt = window.resetsAt {

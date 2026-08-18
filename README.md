@@ -93,7 +93,9 @@ C'est la **seule** requête sortante de l'app. Aucune télémétrie, aucune dép
 
 L'endpoint renvoie des 429 persistants s'il est sollicité trop souvent.
 
-- 90 s quand la fenêtre 5 h est entamée (`utilization > 0`), 7 min sinon.
+- Mode **Auto** (défaut) : 90 s quand la fenêtre 5 h est entamée (`utilization > 0`), 7 min sinon.
+- Cadence fixe au choix dans les réglages : 1 min, 5 min, 15 min, 30 min, 1 h. Changer la cadence
+  ne déclenche pas d'appel immédiat — le prochain appel est replanifié à partir du dernier.
 - Backoff exponentiel après échec, plafonné à 30 min, et `Retry-After` respecté s'il est présent.
 - Polling suspendu en veille et session verrouillée (`NSWorkspace.willSleep` /
   `sessionDidResignActive` / `com.apple.screenIsLocked`), repris par un appel immédiat au réveil.
@@ -137,7 +139,10 @@ interfaces : `UsageStore` est le seul point de contact entre les services et les
 
 ## Réglages (popover)
 
-- Métrique de la barre de menu : fenêtre 5 h, hebdomadaire, ou la plus contrainte des deux.
+- Rafraîchissement : Auto, 1 min, 5 min, 15 min, 30 min, 1 h.
+- Barre de menu : les deux fenêtres côte à côte (5h / Week), ou une seule métrique — fenêtre 5 h,
+  hebdomadaire, ou la plus contrainte des deux.
+- Couleur des pourcentages, avec bouton « Défaut » pour revenir au vert.
 - Afficher le restant plutôt que le consommé.
 - Notifications à 80 % et 95 % de chaque fenêtre, une seule fois par fenêtre, ré-armées au reset.
 - Lancement au démarrage (`SMAppService`).
@@ -149,8 +154,17 @@ interfaces : `UsageStore` est le seul point de contact entre les services et les
   100 % pour un usage réel de 1 % — la pire fausse alerte possible, dans le cas le plus fréquent. La
   conversion reste centralisée dans `Utilization.normalize`, avec la ligne à décommenter si l'API
   repasse un jour en 0–1.
-- **Métrique par défaut : « la plus contrainte ».** C'est le seul chiffre qui ne peut pas mentir par
+- **Barre de menu par défaut : les deux fenêtres.** Logo Claude, puis une colonne « 5h » et une
+  colonne « Week », intitulé au-dessus du pourcentage. Le mode métrique unique reste disponible et
+  utilise alors « la plus contrainte » par défaut — le seul chiffre qui ne peut pas mentir par
   omission quand une seule des deux fenêtres est proche de la limite.
+- **Logo Claude dessiné en `Path`** (`Views/ClaudeGlyph.swift`), pas en asset : rien à embarquer et
+  rendu net à toutes les tailles.
+- **Couleur personnalisable pour le confort seulement.** Le `ColorPicker` change la couleur sous
+  80 % ; les seuils orange 80 % et rouge 95 % ne sont pas modifiables, ce sont eux qui alertent.
+- **Cadence fixe autorisée jusqu'à 1 min.** L'endpoint renvoie des 429 s'il est trop sollicité : en
+  dessous de la minute, aucune option n'est proposée, et le backoff exponentiel plafonné à 30 min
+  s'applique de toute façon par-dessus la cadence choisie.
 - **Fenêtres affichées : celles que l'API renvoie non nulles.** `seven_day_sonnet` et
   `seven_day_opus` sont donc masquées quand elles valent `null` (c'est le cas sur ce compte).
   Aucune ligne vide n'est laissée.

@@ -2,22 +2,22 @@ import SwiftUI
 
 enum UsageFormatting {
 
-    /// Orange à 80 %, rouge à 95 %.
-    static func color(forPercentUsed percent: Double) -> Color {
+    /// Couleur choisie par l'utilisateur tant que la marge est confortable,
+    /// puis orange à 80 % et rouge à 95 %. Les deux seuils d'alerte ne sont pas
+    /// personnalisables : ce sont eux qui portent l'avertissement.
+    static func color(forPercentUsed percent: Double, base: Color) -> Color {
         if percent >= Thresholds.critical { return .red }
         if percent >= Thresholds.warning { return .orange }
-        return .primary
-    }
-
-    /// Teinte des barres de progression : même seuils, mais toujours colorée.
-    static func barColor(forPercentUsed percent: Double) -> Color {
-        if percent >= Thresholds.critical { return .red }
-        if percent >= Thresholds.warning { return .orange }
-        return .accentColor
+        return base
     }
 
     static func percent(_ value: Double) -> String {
         "\(Int(value.rounded())) %"
+    }
+
+    /// Variante sans espace, pour la barre de menu où chaque point compte.
+    static func percentCompact(_ value: Double) -> String {
+        "\(Int(value.rounded()))%"
     }
 
     /// Compte à rebours lisible. Affiché uniquement à partir d'un `resets_at` réel.

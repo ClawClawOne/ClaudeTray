@@ -65,9 +65,9 @@ struct MenuBarLabel: View {
             Text(title)
                 .font(.system(size: 7.5, weight: .semibold))
                 .kerning(0.2)
-                .foregroundStyle(monochrome.opacity(0.7))
+                .foregroundStyle(monochrome)
             Text(value(for: window))
-                .font(.system(size: 11, weight: .bold))
+                .font(.system(size: 12, weight: .bold))
                 .foregroundStyle(color(for: window))
                 .monospacedDigit()
         }

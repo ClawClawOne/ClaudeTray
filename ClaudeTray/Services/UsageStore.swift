@@ -25,6 +25,10 @@ final class UsageStore: ObservableObject {
     @Published var showRemaining: Bool {
         didSet { defaults.set(showRemaining, forKey: PreferenceKey.showRemaining) }
     }
+    /// Marge ajoutée à gauche et à droite du contenu de la barre de menu.
+    @Published var edgeMargin: Double {
+        didSet { defaults.set(edgeMargin, forKey: PreferenceKey.edgeMargin) }
+    }
     /// Affichage du logo Claude dans la barre de menu.
     @Published var showLogo: Bool {
         didSet { defaults.set(showLogo, forKey: PreferenceKey.showLogo) }
@@ -86,6 +90,8 @@ final class UsageStore: ObservableObject {
         metric = MenuBarMetric(rawValue: storedMetric) ?? .mostConstrained
         showRemaining = defaults.bool(forKey: PreferenceKey.showRemaining)
         showBothWindows = defaults.object(forKey: PreferenceKey.showBothWindows) as? Bool ?? true
+        edgeMargin = defaults.object(forKey: PreferenceKey.edgeMargin) as? Double
+            ?? MenuBarLayout.defaultEdgeMargin
         showLogo = defaults.object(forKey: PreferenceKey.showLogo) as? Bool ?? true
         itemSpacing = defaults.object(forKey: PreferenceKey.itemSpacing) as? Double
             ?? MenuBarLayout.defaultSpacing

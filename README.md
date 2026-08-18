@@ -145,8 +145,9 @@ interfaces : `UsageStore` est le seul point de contact entre les services et les
   hebdomadaire, ou la plus contrainte des deux.
 - Couleur des pourcentages : huit pastilles cliquables (vert par défaut).
 - Logo Claude affiché ou masqué. Masqué, les colonnes gardent la même marge des deux côtés.
-- Espacement des éléments de la barre de menu, de 2 à 24 pt (10 pt par défaut). Le même réglage
-  fixe les marges extérieures gauche et droite, pour un ensemble toujours symétrique.
+- Espacement entre les éléments de la barre de menu, de 2 à 24 pt (10 pt par défaut).
+- Marge extérieure gauche et droite, de 0 à 24 pt (0 par défaut). À 0, il ne reste que la marge
+  que macOS impose lui-même au bouton de la barre de menu ; l'app n'en ajoute aucune.
 - Afficher le restant plutôt que le consommé.
 - Notifications à 80 % et 95 % de chaque fenêtre, une seule fois par fenêtre, ré-armées au reset.
 - Lancement au démarrage (`SMAppService`).

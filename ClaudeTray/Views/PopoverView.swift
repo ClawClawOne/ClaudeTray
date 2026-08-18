@@ -79,6 +79,17 @@ struct PopoverView: View {
             .disabled(store.showBothWindows)
 
             HStack {
+                Text("Marge extérieure")
+                Slider(value: $store.edgeMargin,
+                       in: 0...MenuBarLayout.maximumEdgeMargin,
+                       step: 1)
+                Text("\(Int(store.edgeMargin)) pt")
+                    .monospacedDigit()
+                    .frame(width: 32, alignment: .trailing)
+            }
+            .controlSize(.small)
+
+            HStack {
                 Text("Espacement")
                 Slider(value: $store.itemSpacing,
                        in: MenuBarLayout.minimumSpacing...MenuBarLayout.maximumSpacing,

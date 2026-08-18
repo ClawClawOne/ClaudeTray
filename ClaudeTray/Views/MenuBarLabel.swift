@@ -61,9 +61,9 @@ struct MenuBarLabel: View {
                     .foregroundStyle(monochrome.opacity(0.6))
             }
         }
-        // Marges extérieures alignées sur l'espacement interne : un seul réglage pilote tout,
-        // et l'ensemble reste symétrique, logo affiché ou non.
-        .padding(.horizontal, store.itemSpacing)
+        // Marge extérieure propre à l'app, nulle par défaut : ne reste alors que celle que
+        // macOS impose lui-même au bouton de la barre de menu. Réglable jusqu'à 24 pt.
+        .padding(.horizontal, store.edgeMargin)
         .frame(height: 22)
         .fixedSize()
     }

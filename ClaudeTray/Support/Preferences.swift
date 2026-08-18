@@ -69,6 +69,7 @@ enum PreferenceKey {
     static let refreshInterval = "refreshInterval"
     static let itemSpacing = "itemSpacing"
     static let showLogo = "showLogo"
+    static let edgeMargin = "edgeMargin"
     static let notificationsEnabled = "notificationsEnabled"
 }
 
@@ -77,6 +78,9 @@ enum MenuBarLayout {
     static let defaultSpacing: Double = 10
     static let minimumSpacing: Double = 2
     static let maximumSpacing: Double = 24
+    /// Marge extérieure gauche et droite, en plus de celle que macOS impose au bouton.
+    static let defaultEdgeMargin: Double = 0
+    static let maximumEdgeMargin: Double = 24
 }
 
 enum Thresholds {

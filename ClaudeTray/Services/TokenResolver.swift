@@ -76,8 +76,16 @@ struct TokenResolver {
     // MARK: - Source 1 : token manuel
 
     private func readManualToken() -> String? {
-        guard let data = try? Data(contentsOf: Self.manualTokenURL),
+        let url = Self.manualTokenURL
+        guard let data = try? Data(contentsOf: url),
               let raw = String(data: data, encoding: .utf8) else { return nil }
+
+        // Si les droits ont dérivé (copie, restauration de sauvegarde, édition manuelle),
+        // on les resserre avant d'utiliser le token plutôt que de faire confiance au fichier.
+        if let mode = (try? FileManager.default.attributesOfItem(atPath: url.path))?[.posixPermissions] as? NSNumber,
+           mode.int16Value & 0o077 != 0 {
+            try? FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: url.path)
+        }
         let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         return trimmed.isEmpty ? nil : trimmed
     }
@@ -85,15 +93,29 @@ struct TokenResolver {
     static func writeManualToken(_ token: String) throws {
         let trimmed = token.trimmingCharacters(in: .whitespacesAndNewlines)
         let url = manualTokenURL
-        try FileManager.default.createDirectory(at: url.deletingLastPathComponent(),
-                                                withIntermediateDirectories: true,
-                                                attributes: [.posixPermissions: 0o700])
+        let manager = FileManager.default
+        try manager.createDirectory(at: url.deletingLastPathComponent(),
+                                    withIntermediateDirectories: true,
+                                    attributes: [.posixPermissions: 0o700])
         if trimmed.isEmpty {
-            try? FileManager.default.removeItem(at: url)
+            try? manager.removeItem(at: url)
             return
         }
-        try Data(trimmed.utf8).write(to: url, options: [.atomic])
-        try FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: url.path)
+
+        // Le fichier est créé vide en 0600 AVANT d'y écrire quoi que ce soit. Un
+        // `write(options: .atomic)` suivi d'un `chmod` laisserait le token lisible par
+        // tout le monde pendant l'intervalle entre les deux opérations.
+        if !manager.fileExists(atPath: url.path) {
+            guard manager.createFile(atPath: url.path,
+                                     contents: nil,
+                                     attributes: [.posixPermissions: 0o600]) else {
+                throw CocoaError(.fileWriteUnknown)
+            }
+        } else {
+            try manager.setAttributes([.posixPermissions: 0o600], ofItemAtPath: url.path)
+        }
+        // Écriture sans `.atomic` : tronque le fichier existant et conserve donc ses droits.
+        try Data(trimmed.utf8).write(to: url)
     }
 
     static func manualTokenExists() -> Bool {

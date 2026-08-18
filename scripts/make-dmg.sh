@@ -56,13 +56,15 @@ DMG_PATH="$DIST_DIR/$APP_NAME-$VERSION.dmg"
 
 step "Signature de l'app (Developer ID, hardened runtime)"
 # --options runtime est exigé par la notarisation ; l'horodatage sécurisé aussi.
-codesign --force --deep \
+# Pas de --deep : Apple le déconseille pour signer (il écrase les signatures internes).
+# L'app n'embarque aucun binaire tiers ; --deep reste utile pour *vérifier*, plus bas.
+codesign --force \
     --options runtime \
     --timestamp \
     --entitlements "$APP_NAME/$APP_NAME.entitlements" \
     --sign "$SIGN_IDENTITY" \
     "$APP_PATH"
-codesign --verify --strict --verbose=2 "$APP_PATH"
+codesign --verify --deep --strict --verbose=2 "$APP_PATH"
 
 step "Construction du DMG"
 cp -R "$APP_PATH" "$STAGING_DIR/"

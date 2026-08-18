@@ -122,6 +122,23 @@ est signé mais sera refusé par Gatekeeper sur une autre machine.
 Rappel à faire figurer sur la page de téléchargement : **l'utilisateur doit avoir Claude Code
 installé et connecté** (voir « Prérequis » plus haut), sinon l'app n'a aucune source de token.
 
+## Sécurité et vie privée
+
+- **Une seule connexion sortante**, en HTTPS, vers `api.anthropic.com`. Aucune télémétrie, aucun
+  service tiers, aucune dépendance externe — le code n'utilise que les frameworks Apple.
+- **Aucune journalisation.** Le token n'est ni imprimé, ni écrit dans un fichier de log, ni inclus
+  dans les messages d'erreur affichés.
+- **Token jamais conservé en mémoire** entre deux appels : il est relu à chaque requête.
+- **Token manuel en clair sur le disque**, dans `~/Library/Application Support/ClaudeTray/token`,
+  en `0600` dans un dossier `0700`. C'est le choix du cahier des charges — il sert d'échappatoire
+  quand le trousseau refuse l'accès. Le fichier est créé avec ses droits restrictifs avant toute
+  écriture, et ses droits sont resserrés à la lecture s'ils ont dérivé. Qui préfère ne rien écrire
+  sur disque laisse ce champ vide : le trousseau est alors la seule source.
+- **Sandbox désactivée**, par nécessité : lire le trousseau et `~/.claude` est impossible autrement.
+  En contrepartie, le durcissement d'exécution (hardened runtime) est actif et aucune exception de
+  signature n'est demandée.
+- **Aucun mécanisme de mise à jour automatique** : l'app ne télécharge et n'exécute jamais de code.
+
 ## Source de données
 
 ```

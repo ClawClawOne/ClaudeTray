@@ -1,36 +1,40 @@
-# Journal des modifications
+# Changelog
 
 [ClaudeTray](https://github.com/ClawClawOne/ClaudeTray) — [TheUnnamedCompany](https://theunnamedcompany.com)
 
-## 1.0 — 18 août 2026
+## 1.0 — 18 August 2026
 
-Première version.
+First release.
 
-### Fonctionnalités
+### Features
 
-- Barre de menu : logo Claude monochrome (masquable) et une colonne par fenêtre de quota —
-  `5H`, `WEEK`, plus une colonne par modèle limité (`FABLE`…). Intitulé en capitales au-dessus,
-  pourcentage consommé en dessous, aligné à gauche.
-- Popover : une barre de progression par fenêtre avec son pourcentage et son compte à rebours,
-  source du token utilisée, heure du dernier rafraîchissement réussi, message d'erreur lisible,
-  bouton Rafraîchir, champ de token manuel, Quitter.
-- Notifications locales à 80 % et 95 % de chaque fenêtre, une seule fois par fenêtre,
-  ré-armées au reset, désactivables.
-- Lancement au démarrage via `SMAppService`.
+- Menu bar: monochrome Claude logo (hideable) and one column per quota window — `5H`, `WEEK`, plus
+  one column per per-model quota (`FABLE`…). Uppercase label on top, percentage used underneath,
+  left-aligned.
+- Popover: one progress bar per window with its percentage and countdown, the token source in use,
+  the time of the last successful refresh, a readable error message, a Refresh button, a manual token
+  field, and Quit.
+- Local notifications at 80% and 95% of each window, once per window, re-armed at reset, toggleable.
+- Launch at login through `SMAppService`.
 
-### Réglages
+### Settings
 
-- Cadence de rafraîchissement : Auto, 1 min, 5 min, 15 min, 30 min, 1 h.
-- Affichage du logo Claude.
-- Une ou toutes les fenêtres dans la barre de menu ; en mode fenêtre unique, choix entre
-  5 h, hebdomadaire et la plus contrainte des deux.
-- Consommé ou restant.
-- Couleur des pourcentages : huit pastilles.
-- Espacement entre éléments (2–24 pt) et marge extérieure (0–24 pt).
+- Refresh rate: Auto, 1 min, 5 min, 15 min, 30 min, 1 h.
+- Claude logo shown or hidden.
+- One or all windows in the menu bar; in single-window mode, choose between the 5-hour window, the
+  weekly window, and whichever is most constrained.
+- Used or remaining.
+- Percentage colour: eight swatches.
+- Spacing between elements (2–24 pt) and edge margin (0–24 pt).
 
-### Robustesse
+### Robustness
 
-- Trois sources de token, dans l'ordre : fichier manuel, trousseau macOS, `.credentials.json`.
-- Backoff exponentiel plafonné à 30 min, `Retry-After` respecté.
-- Polling suspendu en veille et session verrouillée, repris au réveil.
-- Dernier instantané valide conservé en cas d'erreur, avec marqueur d'obsolescence.
+- Three token sources, in order: manual file, macOS keychain, `.credentials.json`.
+- Exponential backoff capped at 30 min, `Retry-After` honoured.
+- Polling suspended on sleep and locked session, resumed on wake.
+- Last valid snapshot kept on error, with a staleness marker.
+
+### Requirement
+
+Claude Code must be installed **and logged in** (`claude` then `/login`): that is what writes the
+OAuth token ClaudeTray reads.

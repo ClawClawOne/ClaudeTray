@@ -4,7 +4,11 @@ App macOS en barre de menu, SwiftUI natif, macOS 14+, **zéro dépendance extern
 Elle affiche l'usage du quota Claude (abonnement Max) : fenêtre 5 h, fenêtre hebdomadaire,
 et une colonne par modèle limité (FABLE, OPUS… selon ce que renvoie l'API).
 
-Version courante : **1.1**. Dépôt public sous licence MIT, releases sur GitHub.
+Version courante : **1.2**. Dépôt public sous licence MIT, releases sur GitHub.
+
+Tout ce dépôt est public, ce fichier compris : il tient lieu de guide de contribution. Aucun secret,
+aucun identifiant Apple, aucun chemin local n'y entre — les seuls identifiants du dépôt sont les
+gabarits `"ton@email"` / `"XXXXXXXXXX"` du script de build.
 
 Le cahier des charges d'origine est dans `ClaudeTray.md`. Le `README.md` — rédigé en anglais, il
 s'adresse aux utilisateurs — couvre l'installation, la signature et les décisions de conception.
@@ -92,6 +96,8 @@ doit s'appliquer immédiatement. Conséquences à garder en tête :
 | Sources du token | `Services/TokenResolver.swift` |
 | Cadence, backoff, veille | `Services/UsageStore.swift` |
 | Rendu de la barre de menu | `Views/MenuBarLabel.swift` |
+| Vérification de version | `Services/UpdateChecker.swift` |
+| Seuils et déclenchement des notifications | `Services/NotificationManager.swift` |
 | Traductions, langues | `Support/Localization.swift` |
 | Réglages persistés | `Support/Preferences.swift` (clés) et `Services/UsageStore.swift` (état) |
 | Palette de couleurs | `Support/ColorStorage.swift` |
@@ -114,14 +120,37 @@ Le projet doit compiler **sans aucun avertissement**. C'est le cas aujourd'hui, 
 2. Entrée en tête de `CHANGELOG.md` — c'est ce fichier qui sert de notes de release.
 3. `./scripts/make-dmg.sh` : Release, signature Developer ID, DMG, notarisation, agrafage,
    vérification `spctl`. Compter quelques minutes de file d'attente chez Apple.
-4. `gh release create vX.Y dist/ClaudeTray-X.Y.dmg --title "…" --notes-file CHANGELOG.md`.
+4. Extraire la seule section de la version — `CHANGELOG.md` entier ferait des notes de release
+   illisibles :
+
+   ```bash
+   awk '/^## X\.Y /{f=1;next} /^## /{f=0} f' CHANGELOG.md > /tmp/notes.md
+   gh release create vX.Y dist/ClaudeTray-X.Y.dmg --title "ClaudeTray X.Y" --notes-file /tmp/notes.md
+   ```
+
+5. Installer la nouvelle version localement : `cp -R build/DerivedData/Build/Products/Release/ClaudeTray.app /Applications/`
+   après avoir tué l'instance en cours. La signature Developer ID change par rapport à un build de
+   développement, donc macOS redemande l'accès au trousseau une fois.
+
+**La release conditionne la vérification de version** : `UpdateChecker` lit `releases/latest`, donc
+une version publiée sans release GitHub reste invisible pour les installations existantes. Le tag
+doit être `vX.Y` — le préfixe `v` est retiré avant comparaison.
+
+Pour l'agent : `notarytool submit --wait` dépasse souvent le délai d'un appel d'outil. Le lancer en
+tâche de fond plutôt que de le relancer, sinon la soumission repart de zéro. `SKIP_NOTARIZE=1`
+permet de construire d'abord le DMG signé, puis de notariser à part.
+
+La signature expose le nom du compte développeur : `codesign -dv` sur le DMG affiche
+`Developer ID Application: Pascal Tourres (…)`, quel que soit l'affichage TheUnnamedCompany dans
+l'app et le README. Le masquer demanderait un compte Apple Developer d'organisation.
 
 Le script échoue proprement s'il manque le certificat *Developer ID Application* ou le profil de
 notarisation (`xcrun notarytool store-credentials claudetray …`). `SKIP_NOTARIZE=1` s'arrête après
 le DMG signé, pour un essai local.
 
-`dist/` et `build/` sont ignorés par git. Les captures du README vivent dans `docs/`
-(`menubar.png`, `popover.png`) : les regénérer si l'interface change visiblement.
+`dist/` et `build/` sont ignorés par git. Les captures du README vivent dans `docs/` :
+`menubar.png` montre la barre avec le logo, `popover.png` le popover complet, réglages compris —
+donc à regénérer dès qu'un réglage est ajouté, sinon la capture ment sur ce que l'app propose.
 
 ## Conventions
 

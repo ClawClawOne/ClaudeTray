@@ -201,6 +201,7 @@ If the API changes, here is where to look:
 | Percentages ×100 or ÷100 | `Utilization.normalize` — the only place that decides the scale |
 | Reset date not decoded | `UsageAPIClient.decodeISODate` |
 | Recurring 429s | `activeInterval` / `idleInterval` / `maxBackoff` in `UsageStore.swift` |
+| Notification fired more than once per threshold | `NotificationManager` — thresholds are crossings, never states |
 
 Code layout:
 
@@ -212,7 +213,8 @@ ClaudeTray/
 │   ├── TokenResolver.swift      the three token sources, in order
 │   ├── UsageAPIClient.swift     the single network call, errors, ISO dates
 │   ├── UsageStore.swift         observable state, cadence, backoff, sleep
-│   ├── NotificationManager.swift  80% / 95% thresholds
+│   ├── NotificationManager.swift  80% / 95% thresholds, edge-triggered
+│   ├── UpdateChecker.swift      daily GitHub release check, off by one toggle
 │   └── LaunchAtLogin.swift      SMAppService
 ├── Support/                     persisted settings, colours, translations
 └── Views/                       menu bar, popover, formatting

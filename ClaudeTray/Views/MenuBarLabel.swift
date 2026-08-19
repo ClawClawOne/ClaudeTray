@@ -55,7 +55,13 @@ struct MenuBarLabel: View {
                 column(title: store.metric.compactLabel, window: store.menuBarWindow)
             }
 
-            if store.isStale || store.snapshot == nil {
+            // Une erreur prime sur l'obsolescence : orange et plein, elle se voit sans ouvrir
+            // le popover. Le marqueur d'obsolescence, lui, reste discret et monochrome.
+            if store.hasError {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.system(size: 9))
+                    .foregroundStyle(Color.orange)
+            } else if store.isStale || store.snapshot == nil {
                 Image(systemName: "exclamationmark.circle")
                     .font(.system(size: 9))
                     .foregroundStyle(monochrome.opacity(0.6))

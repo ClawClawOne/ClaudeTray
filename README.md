@@ -72,7 +72,7 @@ the refresh rate.
 | Spacing | Gap between elements, 2 to 24 pt |
 | Edge margin | Left and right margin, 0 to 24 pt |
 | Notifications | Alerts when a window crosses 80% and 95%, toggleable |
-| Update check | Asks GitHub once a day whether a newer release exists, toggleable, with a **Check now** button |
+| Update check | Asks GitHub once a day whether a newer release exists, toggleable, with a **Check now** button that reports its verdict |
 | Revoke token access | Deletes the manual token and removes ClaudeTray from the keychain item’s trusted apps |
 | Launch at login | Through `SMAppService` |
 
@@ -91,6 +91,10 @@ the popover — the change applies immediately, no restart.
 `5H` and `WEEK` come from the two main windows. Extra columns — `FABLE`, `OPUS`… — are the per-model
 quotas, named as the API names them. Nothing is hardcoded: a column appears if the account has that
 quota and disappears otherwise. No empty rows are left behind.
+
+An orange warning triangle joins the columns whenever a call fails, so an error is visible from the
+menu bar without opening the popover. A dimmer circle marks data that has gone stale past 15 minutes.
+The popover header carries the version number.
 
 ## Troubleshooting
 
@@ -200,8 +204,9 @@ The `anthropic-beta` header is mandatory: without it the API returns 401. This i
 pay-as-you-go API key — `ANTHROPIC_API_KEY` appears nowhere in the code and would not work here.
 
 Because the endpoint is undocumented, the app is written to fail cleanly: it keeps the last valid
-snapshot on screen, names precisely what went wrong (401, 429, unexpected schema, network) and marks
-the data as stale past 15 minutes. It never invents a reset date: only `resets_at` is displayed, or
+snapshot on screen, names precisely what went wrong (401, 429, unexpected schema, network), flags it
+in the menu bar and marks the data as stale past 15 minutes. On a 429 the announced delay is the one
+actually scheduled, not the server's `Retry-After`, which is sometimes `0`. It never invents a reset date: only `resets_at` is displayed, or
 "not reported by the API".
 
 If the API changes, here is where to look:

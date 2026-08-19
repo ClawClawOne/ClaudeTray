@@ -27,10 +27,16 @@ enum UpdateChecker {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0"
     }
 
-    /// Renvoie la version disponible si elle est strictement plus récente, sinon nil.
-    /// Toute erreur (réseau, quota GitHub, schéma) est silencieuse : une mise à jour ratée
-    /// n'a pas à polluer le pied du popover réservé aux erreurs de quota.
-    static func latestVersionIfNewer() async -> (version: String, url: URL)? {
+    /// Issue d'une vérification. « Échec » et « à jour » étaient autrefois confondus dans un
+    /// même `nil`, ce qui faisait annoncer « ClaudeTray est à jour » alors que la requête
+    /// n'avait tout simplement pas abouti.
+    enum Outcome: Equatable {
+        case upToDate
+        case newer(version: String, url: URL)
+        case failed
+    }
+
+    static func check() async -> Outcome {
         var request = URLRequest(url: endpoint)
         request.timeoutInterval = 15
         request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
@@ -39,12 +45,12 @@ enum UpdateChecker {
         let session = URLSession(configuration: .ephemeral)
         guard let (data, response) = try? await session.data(for: request),
               let http = response as? HTTPURLResponse, http.statusCode == 200,
-              let release = try? JSONDecoder().decode(Release.self, from: data) else { return nil }
+              let release = try? JSONDecoder().decode(Release.self, from: data) else { return .failed }
 
         let latest = release.tagName.trimmingCharacters(in: CharacterSet(charactersIn: "vV "))
-        guard isNewer(latest, than: currentVersion) else { return nil }
+        guard isNewer(latest, than: currentVersion) else { return .upToDate }
         let url = release.htmlURL.flatMap(URL.init(string:)) ?? releasesPage
-        return (latest, url)
+        return .newer(version: latest, url: url)
     }
 
     /// Comparaison numérique composant par composant : « 1.10 » est plus récent que « 1.9 ».

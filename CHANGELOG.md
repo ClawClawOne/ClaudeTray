@@ -2,6 +2,18 @@
 
 [ClaudeTray](https://github.com/ClawClawOne/ClaudeTray) — [TheUnnamedCompany](https://theunnamedcompany.com)
 
+## 1.6 — 19 August 2026
+
+- **The version number is in the popover header.** There was no way to tell which build was running
+  short of opening the Finder, which made “is it up to date?” impossible to answer from the app.
+- **A failed update check no longer claims you are up to date.** Network errors, GitHub rate limits
+  and unexpected payloads all returned the same `nil` as “nothing newer”, so **Check now** said
+  “ClaudeTray is up to date” when it had in fact reached nothing. The three outcomes are now
+  distinct, and an unreachable GitHub says so.
+- **Errors are visible from the menu bar.** An orange warning triangle appears next to the columns
+  whenever a call fails, so nothing forces you to open the popover to learn that a refresh failed.
+  The stale marker keeps its discreet monochrome circle.
+
 ## 1.5 — 19 August 2026
 
 - **Fixed: the 429 message announced a wrong delay.** It printed the server’s `Retry-After` header,

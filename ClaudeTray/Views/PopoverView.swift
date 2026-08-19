@@ -51,6 +51,9 @@ struct PopoverView: View {
                 .frame(width: 14, height: 14)
             Text("ClaudeTray")
                 .font(.system(size: 13, weight: .bold))
+            Text(store.appVersion)
+                .font(.system(size: 10))
+                .foregroundStyle(.secondary)
             Spacer()
             if store.isRefreshing {
                 ProgressView().controlSize(.small)
@@ -171,8 +174,8 @@ struct PopoverView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            if store.checkedUpToDate {
-                Text(loc.upToDate)
+            if let verdict = store.updateVerdict {
+                Text(verdict)
                     .font(.system(size: 10))
                     .foregroundStyle(.secondary)
             }

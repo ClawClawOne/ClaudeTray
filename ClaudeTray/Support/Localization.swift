@@ -197,6 +197,14 @@ struct Loc {
     var checkNow: String { p("Check now", "Vérifier maintenant", "Jetzt prüfen", "Comprobar ahora", "Controlla ora") }
     var checkingUpdate: String { p("Checking…", "Vérification…", "Prüfung läuft…", "Comprobando…", "Verifica…") }
 
+    var updateCheckFailed: String {
+        p("Could not reach GitHub to check for updates.",
+          "Impossible de joindre GitHub pour vérifier les mises à jour.",
+          "GitHub für die Update-Prüfung nicht erreichbar.",
+          "No se pudo contactar con GitHub para buscar actualizaciones.",
+          "Impossibile contattare GitHub per cercare aggiornamenti.")
+    }
+
     var upToDate: String {
         p("ClaudeTray is up to date.", "ClaudeTray est à jour.", "ClaudeTray ist aktuell.",
           "ClaudeTray está actualizado.", "ClaudeTray è aggiornato.")

@@ -76,7 +76,8 @@ final class UsageStore: ObservableObject {
             if updateCheckEnabled {
                 checkForUpdates(force: true)
             } else {
-                availableUpdate = nil
+                updateOutcome = nil
+                showsCheckVerdict = false
             }
         }
     }
@@ -89,12 +90,13 @@ final class UsageStore: ObservableObject {
             }
         }
     }
-    /// Version plus récente détectée sur GitHub, sinon nil.
-    @Published private(set) var availableUpdate: (version: String, url: URL)?
+    /// Issue de la dernière vérification de version.
+    @Published private(set) var updateOutcome: UpdateChecker.Outcome?
     /// Vérification de version en cours, pour le retour visuel du bouton manuel.
     @Published private(set) var isCheckingUpdate = false
-    /// Vrai après une vérification manuelle qui n'a rien trouvé de plus récent.
-    @Published private(set) var checkedUpToDate = false
+    /// Vrai quand la dernière vérification a été demandée à la main : seule celle-là
+    /// mérite un verdict écrit, une vérification automatique reste discrète.
+    @Published private(set) var showsCheckVerdict = false
     /// Délai avant la prochaine tentative, tel qu'il vient d'être planifié.
     @Published private(set) var nextRetryDelay: TimeInterval?
     /// Message court affiché après une action locale (révocation), effacé au prochain succès.
@@ -158,8 +160,31 @@ final class UsageStore: ObservableObject {
         return localError?(loc)
     }
 
+    /// Vrai dès qu'un message d'erreur est affichable : la barre de menu le signale par un
+    /// pictogramme, pour ne pas obliger à ouvrir le popover pour savoir que ça coince.
+    var hasError: Bool { errorMessage != nil }
+
     /// Message informatif (non fautif) affiché sous les erreurs.
     var noticeMessage: String? { notice?(loc) }
+
+    /// Version plus récente détectée, sinon nil.
+    var availableUpdate: (version: String, url: URL)? {
+        if case .newer(let version, let url) = updateOutcome { return (version, url) }
+        return nil
+    }
+
+    /// Verdict écrit d'une vérification demandée à la main : « à jour » ou « impossible ».
+    var updateVerdict: String? {
+        guard showsCheckVerdict else { return nil }
+        switch updateOutcome {
+        case .upToDate: return loc.upToDate
+        case .failed: return loc.updateCheckFailed
+        default: return nil
+        }
+    }
+
+    /// Version compilée, affichée dans l'en-tête du popover.
+    var appVersion: String { UpdateChecker.currentVersion }
 
     // MARK: - Données dérivées
 
@@ -299,16 +324,16 @@ final class UsageStore: ObservableObject {
         guard !isCheckingUpdate else { return }
         defaults.set(Date(), forKey: PreferenceKey.lastUpdateCheck)
         isCheckingUpdate = true
-        checkedUpToDate = false
+        showsCheckVerdict = false
         Task { @MainActor [weak self] in
-            let result = await UpdateChecker.latestVersionIfNewer()
+            let outcome = await UpdateChecker.check()
             guard let self else { return }
             self.isCheckingUpdate = false
             // Réglage coupé pendant la requête : on ne réaffiche rien, sauf si la vérification
             // avait été demandée à la main.
             guard self.updateCheckEnabled || force else { return }
-            self.availableUpdate = result
-            self.checkedUpToDate = force && result == nil
+            self.updateOutcome = outcome
+            self.showsCheckVerdict = force
         }
     }
 

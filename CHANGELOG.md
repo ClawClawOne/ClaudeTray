@@ -19,6 +19,12 @@
 - **Errors are visible from the menu bar.** An orange warning triangle appears next to the columns
   whenever a call fails, so nothing forces you to open the popover to learn that a refresh failed.
   The stale marker keeps its discreet monochrome circle.
+- **Fixed: the popover reopened on its own.** Once it had been opened and closed, any change in the
+  menu bar label’s shape — the status marker appearing or disappearing, the fallback branch swapping
+  a `Text` for an `Image` — made `MenuBarExtra` present its window again, without a click. Since the
+  marker follows failures, the popup showed up exactly when a refresh went wrong. The label now keeps
+  a constant view tree and a constant width: the status slot is always there, transparent when there
+  is nothing to report.
 
 ## 1.5 — 19 August 2026
 

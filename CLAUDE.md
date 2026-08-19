@@ -48,6 +48,11 @@ ne convient pas — elle ne dépose qu'une clé Electron `Claude Safe Storage`, 
   le chemin désigne ClaudeTray, et n'écrit rien s'il n'y en a aucune. La liste de partitions
   (`teamid:`, `apple-tool:`) est laissée intacte : la réécrire risquerait de couper Claude Code de
   ses propres identifiants.
+- **Le libellé de la barre de menu garde une géométrie et une identité constantes.** `MenuBarExtra`
+  re-présente sa fenêtre quand la vue du libellé change de forme : un pictogramme qui apparaît, une
+  branche `if/else` qui remplace une `Image` par un `Text`, et le popover se rouvre tout seul après
+  avoir été ouvert une fois (bug 1.5). L'emplacement d'état est donc toujours présent, transparent
+  quand il n'y a rien à signaler, et le rendu passe toujours par `Image`.
 - **Aucun reset calculé localement.** On affiche `resets_at` tel quel, ou « non communiqué ».
   Le comportement réel de la fenêtre hebdo est instable : une prédiction fausse est pire que rien.
 - **Une erreur n'efface jamais les données.** Le dernier instantané valide reste à l'écran, avec

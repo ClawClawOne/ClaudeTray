@@ -16,11 +16,9 @@ struct MenuBarLabel: View {
         // rattraper un changement d'apparence système et l'animation du marqueur d'obsolescence.
         let _ = store.now
 
-        if let image = rendered() {
-            Image(nsImage: image)
-        } else {
-            Text(fallbackText)
-        }
+        // Toujours la même branche : alterner entre `Image` et `Text` changerait l'identité
+        // de la vue du libellé, et `MenuBarExtra` re-présente sa fenêtre à ce moment-là.
+        Image(nsImage: rendered() ?? Self.emptyImage)
     }
 
     // MARK: - Rendu
@@ -55,17 +53,7 @@ struct MenuBarLabel: View {
                 column(title: store.metric.compactLabel, window: store.menuBarWindow)
             }
 
-            // Une erreur prime sur l'obsolescence : orange et plein, elle se voit sans ouvrir
-            // le popover. Le marqueur d'obsolescence, lui, reste discret et monochrome.
-            if store.hasError {
-                Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.system(size: 9))
-                    .foregroundStyle(Color.orange)
-            } else if store.isStale || store.snapshot == nil {
-                Image(systemName: "exclamationmark.circle")
-                    .font(.system(size: 9))
-                    .foregroundStyle(monochrome.opacity(0.6))
-            }
+            statusGlyph
         }
         // Marge extérieure propre à l'app, nulle par défaut : ne reste alors que celle que
         // macOS impose lui-même au bouton de la barre de menu. Réglable jusqu'à 24 pt.
@@ -73,6 +61,31 @@ struct MenuBarLabel: View {
         .frame(height: 22)
         .fixedSize()
     }
+
+    /// Emplacement d'état, toujours présent et toujours de la même largeur : une erreur y met
+    /// un triangle orange, une donnée obsolète un rond discret, et le reste du temps il est
+    /// transparent. Le faire apparaître et disparaître changerait la largeur du libellé, ce qui
+    /// suffit à faire rouvrir le popover tout seul.
+    private var statusGlyph: some View {
+        Image(systemName: store.hasError ? "exclamationmark.triangle.fill" : "exclamationmark.circle")
+            .font(.system(size: 9))
+            .foregroundStyle(glyphColor)
+            .frame(width: 11)
+    }
+
+    private var glyphColor: Color {
+        if store.hasError { return .orange }
+        if store.isStale || store.snapshot == nil { return monochrome.opacity(0.6) }
+        return .clear
+    }
+
+    /// Image vide de la hauteur de la barre, servie si le rendu échoue : mieux vaut un blanc
+    /// qu'un changement de type de vue.
+    private static let emptyImage: NSImage = {
+        let image = NSImage(size: NSSize(width: 1, height: 22))
+        image.isTemplate = false
+        return image
+    }()
 
     private func column(title: String, window: UsageWindow?) -> some View {
         // Deux lignes alignées à gauche : intitulé en capitales, pourcentage en dessous.
@@ -92,11 +105,6 @@ struct MenuBarLabel: View {
     }
 
     // MARK: - Valeurs
-
-    private var fallbackText: String {
-        guard let window = store.menuBarWindow else { return "—" }
-        return UsageFormatting.percentCompact(window.percentUsed)
-    }
 
     private func value(for window: UsageWindow?) -> String {
         guard let window else { return "—" }

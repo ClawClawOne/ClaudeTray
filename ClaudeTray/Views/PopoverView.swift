@@ -146,6 +146,11 @@ struct PopoverView: View {
             Toggle(loc.launchAtLogin, isOn: $store.launchAtLogin)
             HStack(spacing: 6) {
                 Toggle(loc.settingCheckUpdates, isOn: $store.updateCheckEnabled)
+                // Version rappelée ici aussi : c'est le seul endroit où l'on se demande
+                // laquelle on fait tourner au moment de comparer avec celle de GitHub.
+                Text(store.appVersion)
+                    .font(.system(size: 10))
+                    .foregroundStyle(.secondary)
                 Spacer()
                 Button(store.isCheckingUpdate ? loc.checkingUpdate : loc.checkNow) {
                     store.checkForUpdates(force: true)

@@ -4,12 +4,18 @@
 
 ## 1.6 — 19 August 2026
 
-- **The version number is in the popover header.** There was no way to tell which build was running
-  short of opening the Finder, which made “is it up to date?” impossible to answer from the app.
+- **The version number is in the popover**, in the header and again next to the update setting —
+  the spot where you actually compare it with what GitHub reports. There was no way to tell which
+  build was running short of opening the Finder, which made “is it up to date?” impossible to answer
+  from the app. The verdict names it too: “ClaudeTray 1.6 is the latest version.”
 - **A failed update check no longer claims you are up to date.** Network errors, GitHub rate limits
   and unexpected payloads all returned the same `nil` as “nothing newer”, so **Check now** said
   “ClaudeTray is up to date” when it had in fact reached nothing. The three outcomes are now
   distinct, and an unreachable GitHub says so.
+- **No cadence under five minutes any more.** The **Auto** mode polled every 90 seconds while the
+  5-hour window was in use, and the endpoint answers that with a stream of 429s. Auto and the 1-minute
+  option are gone; the choice is 5, 15, 30 minutes or an hour, and settings pointing at a removed
+  value fall back to 5 minutes.
 - **Errors are visible from the menu bar.** An orange warning triangle appears next to the columns
   whenever a call fails, so nothing forces you to open the popover to learn that a refresh failed.
   The stale marker keeps its discreet monochrome circle.

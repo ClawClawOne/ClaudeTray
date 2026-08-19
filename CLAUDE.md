@@ -53,8 +53,9 @@ ne convient pas — elle ne dépose qu'une clé Electron `Claude Safe Storage`, 
 - **Une erreur n'efface jamais les données.** Le dernier instantané valide reste à l'écran, avec
   un message lisible et un marqueur « obsolète depuis X » au-delà de 15 min.
 - **Respecter la cadence.** L'endpoint renvoie des 429 persistants s'il est trop sollicité :
-  90 s / 7 min en mode Auto, backoff exponentiel plafonné à 30 min, `Retry-After` prioritaire.
-  Aucune option en dessous de la minute.
+  cadence minimale 5 min, backoff exponentiel plafonné à 30 min, `Retry-After` prioritaire.
+  Le mode « Auto » (90 s quand la fenêtre 5 h était entamée) a été retiré en 1.6 : il provoquait
+  des 429 en série. Ne jamais réintroduire d'option sous les 5 minutes.
 - **Toute chaîne visible passe par `Loc`.** Aucune chaîne d'interface écrite en dur dans une vue :
   cinq langues sont maintenues, et une chaîne oubliée est une régression visible.
 - **Le token manuel s'écrit en 0600 avant de recevoir la moindre donnée.** Ne jamais revenir à

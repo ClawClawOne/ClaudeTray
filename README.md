@@ -63,7 +63,7 @@ the refresh rate.
 | Setting | Effect |
 | --- | --- |
 | Language | System, English, French, German, Spanish, Italian |
-| Refresh rate | Auto, 1 min, 5 min, 15 min, 30 min, 1 h |
+| Refresh rate | 5 min, 15 min, 30 min, 1 h — nothing faster, the endpoint rate-limits |
 | Claude logo | Shown or hidden in the menu bar |
 | Windows shown | All side by side, or a single metric |
 | Single metric | 5-hour window, weekly, or whichever is most constrained |
@@ -76,7 +76,8 @@ the refresh rate.
 | Revoke token access | Deletes the manual token and removes ClaudeTray from the keychain item’s trusted apps |
 | Launch at login | Through `SMAppService` |
 
-In **Auto** mode the app polls every 90 s while the 5-hour window is in use, every 7 min otherwise.
+The default is one call every 5 minutes. Faster cadences existed and were removed: the endpoint
+answers a sustained 90-second poll with persistent 429s.
 Countdowns animate locally, once a second, and cost no request at all. Polling is suspended on sleep
 and on a locked session, and resumes on wake.
 

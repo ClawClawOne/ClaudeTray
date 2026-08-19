@@ -113,9 +113,7 @@ final class UsageStore: ObservableObject {
     private var lastAttempt: Date?
     private var pendingRetryAfter: TimeInterval?
 
-    // Cadences imposées par l'endpoint : il renvoie des 429 persistants s'il est sollicité trop souvent.
-    private let activeInterval: TimeInterval = 90
-    private let idleInterval: TimeInterval = 7 * 60
+    // Plafond du backoff : au-delà, l'app cesserait d'être utile.
     private let maxBackoff: TimeInterval = 30 * 60
 
     init() {
@@ -129,8 +127,10 @@ final class UsageStore: ObservableObject {
         showLogo = defaults.object(forKey: PreferenceKey.showLogo) as? Bool ?? true
         itemSpacing = defaults.object(forKey: PreferenceKey.itemSpacing) as? Double
             ?? MenuBarLayout.defaultSpacing
+        // Les anciennes valeurs « auto » et « 1 min » n'existent plus : elles retombent sur 5 min,
+        // la cadence la plus rapide que l'endpoint accepte sans renvoyer des 429 en série.
         refreshInterval = RefreshInterval(rawValue: defaults.string(forKey: PreferenceKey.refreshInterval) ?? "")
-            ?? .auto
+            ?? .minute5
         percentColor = ColorStorage.color(fromHex: defaults.string(forKey: PreferenceKey.percentColor))
             ?? ColorStorage.defaultPercentColor
         notificationsEnabled = defaults.object(forKey: PreferenceKey.notificationsEnabled) as? Bool ?? true
@@ -177,7 +177,7 @@ final class UsageStore: ObservableObject {
     var updateVerdict: String? {
         guard showsCheckVerdict else { return nil }
         switch updateOutcome {
-        case .upToDate: return loc.upToDate
+        case .upToDate: return loc.upToDate(appVersion)
         case .failed: return loc.updateCheckFailed
         default: return nil
         }
@@ -295,18 +295,11 @@ final class UsageStore: ObservableObject {
     /// Cadence normale selon l'activité de la fenêtre 5 h, backoff exponentiel après échec,
     /// et `Retry-After` prioritaire s'il est plus long que le délai calculé.
     private func nextDelay() -> TimeInterval {
-        let base: TimeInterval
-        if let fixed = refreshInterval.seconds {
-            base = fixed
-        } else if let fiveHour = snapshot?.window(.fiveHour), fiveHour.percentUsed > 0 {
-            base = activeInterval
-        } else {
-            base = idleInterval
-        }
+        let base = refreshInterval.seconds
 
         guard consecutiveFailures > 0 else { return base }
 
-        let exponential = activeInterval * pow(2, Double(consecutiveFailures - 1))
+        let exponential = base * pow(2, Double(consecutiveFailures - 1))
         let backoff = min(exponential, maxBackoff)
         return min(max(backoff, pendingRetryAfter ?? 0), maxBackoff)
     }

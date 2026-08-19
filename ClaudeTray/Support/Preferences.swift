@@ -27,9 +27,10 @@ enum MenuBarMetric: String, CaseIterable, Identifiable {
 }
 
 /// Cadence de rafraîchissement choisie dans les réglages.
+/// Cadences proposées. Rien en dessous de cinq minutes : l'endpoint renvoie des 429
+/// persistants dès qu'on l'interroge plus souvent, et le mode « Auto » d'avant, qui
+/// descendait à 90 s quand la fenêtre 5 h était entamée, les provoquait en permanence.
 enum RefreshInterval: String, CaseIterable, Identifiable {
-    case auto
-    case minute1
     case minute5
     case minute15
     case minute30
@@ -39,8 +40,6 @@ enum RefreshInterval: String, CaseIterable, Identifiable {
 
     func label(_ loc: Loc) -> String {
         switch self {
-        case .auto: return loc.intervalAuto
-        case .minute1: return "1 min"
         case .minute5: return "5 min"
         case .minute15: return "15 min"
         case .minute30: return "30 min"
@@ -48,11 +47,9 @@ enum RefreshInterval: String, CaseIterable, Identifiable {
         }
     }
 
-    /// Délai fixe, ou nil en mode auto (cadence adaptée à l'activité de la fenêtre 5 h).
-    var seconds: TimeInterval? {
+    /// Délai fixe entre deux appels.
+    var seconds: TimeInterval {
         switch self {
-        case .auto: return nil
-        case .minute1: return 60
         case .minute5: return 300
         case .minute15: return 900
         case .minute30: return 1800

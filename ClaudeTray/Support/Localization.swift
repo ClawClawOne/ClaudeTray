@@ -94,7 +94,6 @@ struct Loc {
     var spacing: String { p("Spacing", "Espacement", "Abstand", "Espaciado", "Spaziatura") }
     var percentColor: String { p("Percentage colour", "Couleur des pourcentages", "Farbe der Prozentwerte", "Color de los porcentajes", "Colore delle percentuali") }
 
-    var intervalAuto: String { p("Auto", "Auto", "Auto", "Automático", "Auto") }
     var intervalOneHour: String { p("1 h", "1 h", "1 Std", "1 h", "1 h") }
 
     var metricFiveHour: String { p("5-hour window", "Fenêtre 5 h", "5-Stunden-Fenster", "Ventana de 5 h", "Finestra di 5 h") }
@@ -205,9 +204,14 @@ struct Loc {
           "Impossibile contattare GitHub per cercare aggiornamenti.")
     }
 
-    var upToDate: String {
-        p("ClaudeTray is up to date.", "ClaudeTray est à jour.", "ClaudeTray ist aktuell.",
-          "ClaudeTray está actualizado.", "ClaudeTray è aggiornato.")
+    /// Le verdict nomme la version installée : « à jour » tout court n'apprend rien
+    /// à qui se demande justement ce qu'il fait tourner.
+    func upToDate(_ version: String) -> String {
+        p("ClaudeTray \(version) is the latest version.",
+          "ClaudeTray \(version) est la dernière version.",
+          "ClaudeTray \(version) ist die neueste Version.",
+          "ClaudeTray \(version) es la última versión.",
+          "ClaudeTray \(version) è l'ultima versione.")
     }
 
     var supportProject: String {

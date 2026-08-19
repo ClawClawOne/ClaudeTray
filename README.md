@@ -37,12 +37,13 @@ Tested on a Max subscription. Behaviour on other plans has not been verified.
 2. Open it and drag **ClaudeTray** into **Applications**.
 3. Launch it. The app has no Dock icon: it appears in the menu bar, top right.
 4. macOS asks for keychain access — that is the app reading Claude Code's token. Pick
-   **Always Allow** so you are not asked again.
+   **Always Allow** so you are not asked again; **Revoke token access** in the popover takes that
+   grant back whenever you want.
 
 The app is Developer ID signed and notarized by Apple: no Gatekeeper warning, nothing special to do
 on first launch.
 
-To uninstall: **Quitter** in the popover, then delete `/Applications/ClaudeTray.app` and the
+To uninstall: **Quit** in the popover, then delete `/Applications/ClaudeTray.app` and the
 `~/Library/Application Support/ClaudeTray` folder.
 
 ## Using it

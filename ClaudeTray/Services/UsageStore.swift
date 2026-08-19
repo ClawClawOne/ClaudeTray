@@ -304,6 +304,9 @@ final class UsageStore: ObservableObject {
             let result = await UpdateChecker.latestVersionIfNewer()
             guard let self else { return }
             self.isCheckingUpdate = false
+            // Réglage coupé pendant la requête : on ne réaffiche rien, sauf si la vérification
+            // avait été demandée à la main.
+            guard self.updateCheckEnabled || force else { return }
             self.availableUpdate = result
             self.checkedUpToDate = force && result == nil
         }

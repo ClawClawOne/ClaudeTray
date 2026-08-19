@@ -237,6 +237,24 @@ struct PopoverView: View {
                 }
             }
 
+            if showTokenField {
+                SecureField("sk-ant-oat…", text: $manualToken)
+                    .textFieldStyle(.roundedBorder)
+                    .controlSize(.small)
+                    .onSubmit(save)
+
+                HStack {
+                    Text(loc.tokenHint)
+                        .font(.system(size: 9))
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer()
+                    Button(loc.save, action: save)
+                        .controlSize(.small)
+                        .disabled(manualToken.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
+            }
+
             HStack(alignment: .firstTextBaseline) {
                 Button(confirmRevoke ? loc.revokeConfirm : loc.revokeToken) {
                     if confirmRevoke {
@@ -256,24 +274,13 @@ struct PopoverView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
-
-            if showTokenField {
-                SecureField("sk-ant-oat…", text: $manualToken)
-                    .textFieldStyle(.roundedBorder)
-                    .controlSize(.small)
-                    .onSubmit(save)
-
-                HStack {
-                    Text(loc.tokenHint)
-                        .font(.system(size: 9))
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                    Spacer()
-                    Button(loc.save, action: save)
-                        .controlSize(.small)
-                        .disabled(manualToken.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                }
-            }
+        }
+        // La confirmation retombe d'elle-même : sans cela, le bouton rouge resterait armé
+        // pour un clic distrait la prochaine fois que le popover est ouvert.
+        .task(id: confirmRevoke) {
+            guard confirmRevoke else { return }
+            try? await Task.sleep(for: .seconds(6))
+            confirmRevoke = false
         }
     }
 

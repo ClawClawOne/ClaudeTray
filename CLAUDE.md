@@ -128,7 +128,7 @@ xcodegen generate
 xcodebuild -project ClaudeTray.xcodeproj -scheme ClaudeTray -configuration Debug build
 ```
 
-Le projet doit compiler **sans aucun avertissement**, à une exception près, documentée : les six
+Le projet doit compiler **sans aucun avertissement**, à une exception près, documentée : les
 avertissements de dépréciation `SecKeychain` de `Services/KeychainAccessRevoker.swift`. Aucune API
 moderne ne sait modifier la liste d'applications de confiance d'un item ; `SecItem*` lit et écrit
 l'item, pas son ACL. Ajouter un nouvel avertissement ailleurs reste interdit.

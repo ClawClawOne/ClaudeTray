@@ -8,6 +8,13 @@
   which is sometimes `0`, while the app actually waits for its own exponential backoff — so the
   popover could read “Retrying in 0 s” and then sit still for minutes. It now shows the delay that
   was really scheduled, formatted like the countdowns (“2 min 30 s”).
+- **Hardening around revocation, from a review of 1.4.** The keychain item was force-cast, which
+  would have crashed the app rather than reported an error if the system ever returned another kind
+  of reference; the type is now checked first. The red confirmation expires after six seconds instead
+  of staying armed for a distracted click on the next popover. The manual token field is back
+  directly under its own button, rather than below the revoke row.
+- A version check that was still in flight when the daily setting is switched off no longer displays
+  its result, unless it was the one you asked for with **Check now**.
 
 ## 1.4 — 19 August 2026
 

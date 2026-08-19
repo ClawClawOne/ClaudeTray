@@ -48,7 +48,10 @@ enum KeychainAccessRevoker {
         // Pas d'item : rien à révoquer, ce n'est pas une erreur.
         if found == errSecItemNotFound { return .nothingToRevoke }
         guard found == errSecSuccess, let ref = item else { return .failed(found) }
-        let keychainItem = ref as! SecKeychainItem
+        // Vérification du type avant conversion : un `as!` ferait planter l'app si le trousseau
+        // renvoyait autre chose qu'un item classique (trousseau iCloud, par exemple).
+        guard CFGetTypeID(ref) == SecKeychainItemGetTypeID() else { return .failed(errSecInvalidItemRef) }
+        let keychainItem = unsafeBitCast(ref, to: SecKeychainItem.self)
 
         var access: SecAccess?
         let accessStatus = SecKeychainItemCopyAccess(keychainItem, &access)

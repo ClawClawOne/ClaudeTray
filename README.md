@@ -110,6 +110,7 @@ The popover header carries the version number.
 | The keychain dialog keeps coming back | Unsigned build, compiled locally | Choose **Always Allow**, or paste a manual token |
 | You want the keychain dialog back | **Always Allow** was granted and you want to undo it | **Revoke token access** in the popover; it also deletes the manual token |
 | Nothing in the menu bar | Menu bar is full | Quit another item, or reduce the spacing in the settings |
+| A window opens without a click | The keychain dialog, after installing a new build | Grant it once; the popover itself no longer reopens on its own since 1.6 |
 
 The popover footer always shows which token source the last call used — including when that call
 failed, so a rejected manual token is named as such instead of leaving the previous source on
@@ -220,6 +221,7 @@ If the API changes, here is where to look:
 | Reset date not decoded | `UsageAPIClient.decodeISODate` |
 | Recurring 429s | `activeInterval` / `idleInterval` / `maxBackoff` in `UsageStore.swift` |
 | Notification fired more than once per threshold | `NotificationManager` — thresholds are crossings, never states |
+| The popover reopens by itself | `MenuBarLabel` — the label's view tree or width changed |
 | Token source line disagrees with the token actually used | `UsageStore.fetchOnce` — the source is published at resolution, before the request |
 
 Code layout:
@@ -241,9 +243,12 @@ ClaudeTray/
 └── Views/                       menu bar, popover, formatting
 ```
 
-Two workarounds are worth knowing before touching the UI: `MenuBarExtra` will not render a two-line
-view (so the label is rasterized through `ImageRenderer`), and a `ColorPicker` is unusable inside a
-menu bar popover (it opens `NSColorPanel`, which dismisses the popover). `CLAUDE.md` covers these
+Three workarounds are worth knowing before touching the UI: `MenuBarExtra` will not render a two-line
+view (so the label is rasterized through `ImageRenderer`), a `ColorPicker` is unusable inside a
+menu bar popover (it opens `NSColorPanel`, which dismisses the popover), and the label must keep a
+constant shape — a view that appears, disappears or changes type makes `MenuBarExtra` present its
+window again on its own, which is why the status marker is always there and merely turns
+transparent. `CLAUDE.md` covers these
 traps in detail.
 
 ## Author

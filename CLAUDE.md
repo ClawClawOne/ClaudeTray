@@ -4,7 +4,7 @@ App macOS en barre de menu, SwiftUI natif, macOS 14+, **zéro dépendance extern
 Elle affiche l'usage du quota Claude (abonnement Max) : fenêtre 5 h, fenêtre hebdomadaire,
 et une colonne par modèle limité (FABLE, OPUS… selon ce que renvoie l'API).
 
-Version courante : **1.4**. Dépôt public sous licence MIT, releases sur GitHub.
+Version courante : **1.6**. Dépôt public sous licence MIT, releases sur GitHub.
 
 Tout ce dépôt est public, ce fichier compris : il tient lieu de guide de contribution. Aucun secret,
 aucun identifiant Apple, aucun chemin local n'y entre — les seuls identifiants du dépôt sont les
@@ -39,10 +39,10 @@ ne convient pas — elle ne dépose qu'une clé Electron `Claude Safe Storage`, 
   `tokenSource` avant la requête. Sinon un token manuel refusé laisse à l'écran la source du dernier
   succès (le trousseau), et l'app a l'air d'ignorer le token collé alors qu'elle vient de l'utiliser
   et de se faire refuser (bug 1.2).
-- **Le token manuel prime tant que le fichier existe**, même s'il déclenche un 401. Le seul retour
-  au trousseau est la suppression du fichier via « Effacer le token manuel ». Ce bouton ne touche
-  jamais l'autorisation trousseau accordée à ClaudeTray : rien dans l'app ne peut la révoquer, ça se
-  fait dans Trousseaux d'accès.
+- **Le token manuel prime tant que le fichier existe**, même s'il déclenche un 401. Le retour au
+  trousseau passe par la suppression du fichier : « Effacer le token manuel », qui ne touche à rien
+  d'autre, ou « Révoquer l'accès au token », qui supprime le fichier *et* retire ClaudeTray des
+  applications de confiance de l'item de trousseau (depuis la 1.4).
 - **Ne jamais toucher aux entrées de trousseau des autres.** L'item `Claude Code-credentials`
   appartient à Claude Code. `KeychainAccessRevoker` ne retire que les applications de confiance dont
   le chemin désigne ClaudeTray, et n'écrit rien s'il n'y en a aucune. La liste de partitions
@@ -51,8 +51,13 @@ ne convient pas — elle ne dépose qu'une clé Electron `Claude Safe Storage`, 
 - **Le libellé de la barre de menu garde une géométrie et une identité constantes.** `MenuBarExtra`
   re-présente sa fenêtre quand la vue du libellé change de forme : un pictogramme qui apparaît, une
   branche `if/else` qui remplace une `Image` par un `Text`, et le popover se rouvre tout seul après
-  avoir été ouvert une fois (bug 1.5). L'emplacement d'état est donc toujours présent, transparent
-  quand il n'y a rien à signaler, et le rendu passe toujours par `Image`.
+  avoir été ouvert une fois dans la session. Le défaut existait depuis la 1.0 et n'est devenu visible
+  qu'en 1.6, quand le pictogramme d'erreur a rendu le changement de largeur fréquent ; corrigé dans
+  la même version. L'emplacement d'état est donc toujours présent, transparent quand il n'y a rien à
+  signaler, et le rendu passe toujours par `Image`.
+- **Un échec de vérification de version n'est pas « à jour ».** `UpdateChecker.check()` renvoie
+  trois issues distinctes ; les confondre dans un même `nil` faisait annoncer « ClaudeTray est à
+  jour » alors que la requête n'avait rien atteint (bug 1.5).
 - **Aucun reset calculé localement.** On affiche `resets_at` tel quel, ou « non communiqué ».
   Le comportement réel de la fenêtre hebdo est instable : une prédiction fausse est pire que rien.
 - **Une erreur n'efface jamais les données.** Le dernier instantané valide reste à l'écran, avec
@@ -102,8 +107,10 @@ doit s'appliquer immédiatement. Conséquences à garder en tête :
   sous `scope.model.display_name`. Aucune liste de modèles n'est figée dans le code.
 - **`resets_at` arrive avec ou sans fraction de seconde.** Les deux formats doivent passer, sinon
   le décodage casse au hasard des réponses.
-- **L'autorisation du trousseau est liée à la signature du binaire.** Chaque rebuild ad-hoc
-  redéclenche la boîte de dialogue ; d'où le token manuel accessible en un clic dans le popover.
+- **L'autorisation du trousseau est liée à la signature du binaire.** Chaque rebuild, ad-hoc comme
+  Developer ID, redéclenche la boîte de dialogue — y compris en installant une nouvelle version
+  publiée. D'où le token manuel accessible en un clic dans le popover. Ne pas confondre cette boîte
+  système avec le popover de l'app quand on cherche « une fenêtre qui s'ouvre toute seule ».
 
 ## Où intervenir
 

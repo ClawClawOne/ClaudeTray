@@ -177,6 +177,23 @@ struct Loc {
     var save: String { p("Save", "Enregistrer", "Sichern", "Guardar", "Salva") }
     var quit: String { p("Quit", "Quitter", "Beenden", "Salir", "Esci") }
 
+    // MARK: - Mises à jour et soutien
+
+    var settingCheckUpdates: String {
+        p("Check for updates daily", "Vérifier les mises à jour chaque jour", "Täglich nach Updates suchen",
+          "Buscar actualizaciones a diario", "Cerca aggiornamenti ogni giorno")
+    }
+
+    func updateAvailable(_ version: String) -> String {
+        p("Version \(version) is available", "La version \(version) est disponible", "Version \(version) ist verfügbar",
+          "La versión \(version) está disponible", "La versione \(version) è disponibile")
+    }
+
+    var supportProject: String {
+        p("Buy me a coffee", "Offrez-moi un café", "Spendier mir einen Kaffee",
+          "Invítame a un café", "Offrimi un caffè")
+    }
+
     var tokenHint: String {
         p("From “claude setup-token”. Stored 0600 in Application Support.",
           "Issu de « claude setup-token ». Stocké en 0600 dans Application Support.",

@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		003C9728243EAEFF50551F6A /* PopoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCE79B03AB22626547C4A7EE /* PopoverView.swift */; };
 		09296CD0B1476B50EE98256D /* UsageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 405A7572734DF3D8CBE2F9B2 /* UsageStore.swift */; };
+		19758305D48931DFC7D8CC5F /* UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1418B4943912A8A26E347252 /* UpdateChecker.swift */; };
 		2E3E86DA4EF568D027A24605 /* ClaudeGlyph.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0EE4782AC0DA9E75E46523 /* ClaudeGlyph.swift */; };
 		35E9EEBBFF473F3BBD738455 /* UsageRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A8B93761A5E2BBB20C62105 /* UsageRowView.swift */; };
 		465DD7C8880B88673B574DB8 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58894594E9E075A2D0974B0C /* NotificationManager.swift */; };
@@ -25,6 +26,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1418B4943912A8A26E347252 /* UpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateChecker.swift; sourceTree = "<group>"; };
 		2A0A2290A80EDD0802B00B63 /* Formatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formatting.swift; sourceTree = "<group>"; };
 		390BDCA572F35E6306B8157A /* ClaudeTrayApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeTrayApp.swift; sourceTree = "<group>"; };
 		405A7572734DF3D8CBE2F9B2 /* UsageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageStore.swift; sourceTree = "<group>"; };
@@ -51,6 +53,7 @@
 			children = (
 				58894594E9E075A2D0974B0C /* NotificationManager.swift */,
 				AA267DD7F2F0103EF344D7A9 /* TokenResolver.swift */,
+				1418B4943912A8A26E347252 /* UpdateChecker.swift */,
 				E95EA5DA2E25FA80744F6E2C /* UsageAPIClient.swift */,
 				405A7572734DF3D8CBE2F9B2 /* UsageStore.swift */,
 			);
@@ -187,6 +190,7 @@
 				003C9728243EAEFF50551F6A /* PopoverView.swift in Sources */,
 				5084E8323FE108C4DB2218F9 /* Preferences.swift in Sources */,
 				5083DFB0C51F84BA643EBB30 /* TokenResolver.swift in Sources */,
+				19758305D48931DFC7D8CC5F /* UpdateChecker.swift in Sources */,
 				F4BF9B9DA2BEA73D81A5A78C /* UsageAPIClient.swift in Sources */,
 				8B3BE695BA09459B9E3AF582 /* UsageModels.swift in Sources */,
 				35E9EEBBFF473F3BBD738455 /* UsageRowView.swift in Sources */,
@@ -231,7 +235,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -250,7 +254,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.2;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -334,7 +338,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -347,7 +351,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.2;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";

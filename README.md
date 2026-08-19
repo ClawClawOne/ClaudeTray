@@ -5,7 +5,7 @@ Your Claude usage, in the macOS menu bar. Time left before the reset, percentage
 
 ![ClaudeTray in the menu bar](docs/menubar.png)
 
-Native SwiftUI app, macOS 14+, **zero dependencies**, a single outbound connection, no telemetry.
+Native SwiftUI app, macOS 14+, **zero dependencies**, no telemetry.
 
 > Independent project, not affiliated with Anthropic. It relies on an undocumented endpoint — the one
 > behind the `/usage` command in Claude Code — and may stop working without notice.
@@ -104,8 +104,10 @@ refresh, and the current error message if there is one.
 
 ## Security and privacy
 
-- **One outbound connection**, over HTTPS, to `api.anthropic.com`. No telemetry, no third-party
-  service, no external dependency: Apple frameworks only.
+- **Two outbound connections at most**, both over HTTPS: `api.anthropic.com` for your quota, and
+  once a day `api.github.com` to see whether a newer release exists. The update check is anonymous —
+  no identifier, no usage data, no parameter — and can be switched off in the popover. No telemetry,
+  no third-party service, no external dependency: Apple frameworks only.
 - **No logging.** The token is never printed, never written to a log, never included in displayed
   error messages.
 - **The token is never held in memory** between calls: it is re-read on every request, because the

@@ -1,13 +1,20 @@
 import Foundation
 import UserNotifications
 
-/// Notifications locales à 80 % et 95 %, une seule fois par fenêtre.
-/// Le ré-armement est piloté par `resets_at` : dès que la date de reset change,
-/// la fenêtre est considérée comme neuve et les deux seuils redeviennent disponibles.
+/// Notifications locales à 80 % et 95 %, déclenchées **au franchissement** du seuil.
+///
+/// Règle : une notification part uniquement si le pourcentage était sous le seuil au relevé
+/// précédent et l'atteint au relevé courant. Deux notifications au maximum par montée.
+///
+/// Le déclenchement ne s'appuie pas sur `resets_at` : la fenêtre glissante de 5 h voit sa date
+/// de reset avancer à chaque appel, ce qui ré-armait les seuils et renvoyait une notification
+/// à chaque rafraîchissement. Le ré-armement vient naturellement de la redescente du
+/// pourcentage sous le seuil au reset de la fenêtre.
 @MainActor
 final class NotificationManager {
-    /// Clé = identifiant de fenêtre ; valeur = (reset observé, seuils déjà notifiés).
-    private var fired: [UsageWindowID: (reset: Date?, thresholds: Set<Int>)] = [:]
+    /// Dernier pourcentage observé par fenêtre. Vide au lancement : le premier instantané
+    /// sert de référence et ne notifie jamais, même s'il arrive déjà au-dessus d'un seuil.
+    private var lastPercent: [UsageWindowID: Double] = [:]
     private var authorizationRequested = false
 
     func requestAuthorizationIfNeeded() {
@@ -19,21 +26,18 @@ final class NotificationManager {
     /// À appeler à chaque instantané reçu.
     func evaluate(snapshot: UsageSnapshot, enabled: Bool, loc: Loc) {
         for window in snapshot.windows {
-            var state = fired[window.id] ?? (reset: window.resetsAt, thresholds: [])
-            if state.reset != window.resetsAt {
-                // Nouvelle fenêtre : on ré-arme les deux seuils.
-                state = (reset: window.resetsAt, thresholds: [])
-            }
+            let current = window.percentUsed
+            defer { lastPercent[window.id] = current }
+            guard let previous = lastPercent[window.id] else { continue }
 
-            for threshold in [Int(Thresholds.critical), Int(Thresholds.warning)] {
-                guard window.percentUsed >= Double(threshold),
-                      !state.thresholds.contains(threshold) else { continue }
-                state.thresholds.insert(threshold)
+            for threshold in [Thresholds.critical, Thresholds.warning] {
+                guard previous < threshold, current >= threshold else { continue }
                 if enabled {
-                    post(window: window, threshold: threshold, loc: loc)
+                    post(window: window, threshold: Int(threshold), loc: loc)
                 }
+                // Un seul message par montée : le seuil critique prime sur le seuil d'alerte.
+                break
             }
-            fired[window.id] = state
         }
     }
 

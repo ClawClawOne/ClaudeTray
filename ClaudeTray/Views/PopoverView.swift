@@ -1,6 +1,9 @@
 import SwiftUI
 
 struct PopoverView: View {
+    /// Lien de soutien, seule URL du popover qui ne serve pas au diagnostic.
+    static let supportURL = URL(string: "https://buymeacoffee.com/theunnamedcompany")!
+
     @ObservedObject var store: UsageStore
     @State private var manualToken = ""
     @State private var showTokenField = false
@@ -136,6 +139,7 @@ struct PopoverView: View {
             Toggle(loc.showRemaining, isOn: $store.showRemaining)
             Toggle(loc.notificationsSetting, isOn: $store.notificationsEnabled)
             Toggle(loc.launchAtLogin, isOn: $store.launchAtLogin)
+            Toggle(loc.settingCheckUpdates, isOn: $store.updateCheckEnabled)
         }
         .toggleStyle(.checkbox)
         .font(.system(size: 11))
@@ -174,9 +178,19 @@ struct PopoverView: View {
                     .foregroundStyle(.secondary)
             }
 
+            if let update = store.availableUpdate {
+                Link(destination: update.url) {
+                    Label(loc.updateAvailable(update.version), systemImage: "arrow.down.circle")
+                        .font(.system(size: 10))
+                }
+            }
+
             manualTokenSection
 
             HStack {
+                Link(loc.supportProject, destination: PopoverView.supportURL)
+                    .font(.system(size: 10))
+                    .foregroundStyle(.secondary)
                 Spacer()
                 Button(loc.quit) { NSApplication.shared.terminate(nil) }
                     .controlSize(.small)

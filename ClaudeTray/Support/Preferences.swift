@@ -72,6 +72,8 @@ enum PreferenceKey {
     static let edgeMargin = "edgeMargin"
     static let language = "language"
     static let notificationsEnabled = "notificationsEnabled"
+    static let updateCheckEnabled = "updateCheckEnabled"
+    static let lastUpdateCheck = "lastUpdateCheck"
 }
 
 enum MenuBarLayout {

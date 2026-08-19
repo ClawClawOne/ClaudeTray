@@ -2,6 +2,18 @@
 
 [ClaudeTray](https://github.com/ClawClawOne/ClaudeTray) — [TheUnnamedCompany](https://theunnamedcompany.com)
 
+## 1.2 — 19 August 2026
+
+- **Fixed: repeated notifications.** Once a window went past 80 % or 95 %, a notification was posted
+  on every refresh — up to one a minute on the fastest interval. The threshold state was re-armed by
+  the `resets_at` date, which moves forward on every call for the rolling 5-hour window. Notifications
+  are now edge-triggered: one is posted only when the percentage was below the threshold at the
+  previous reading and reaches it at the current one, so a rising window produces at most two.
+- **Daily update check.** ClaudeTray asks GitHub once every 24 hours whether a newer release exists
+  and, if so, shows a link in the popover footer. The request is anonymous and the check can be
+  turned off in the settings.
+- A discreet support link in the popover footer.
+
 ## 1.1 — 18 August 2026
 
 - **The interface is now available in English, French, German, Spanish and Italian.** It follows the

@@ -67,6 +67,18 @@ final class UsageStore: ObservableObject {
             if notificationsEnabled { notifications.requestAuthorizationIfNeeded() }
         }
     }
+    /// Vérification quotidienne des mises à jour sur GitHub. Deuxième destination sortante,
+    /// donc explicitement débrayable.
+    @Published var updateCheckEnabled: Bool {
+        didSet {
+            defaults.set(updateCheckEnabled, forKey: PreferenceKey.updateCheckEnabled)
+            if updateCheckEnabled {
+                checkForUpdates(force: true)
+            } else {
+                availableUpdate = nil
+            }
+        }
+    }
     @Published var launchAtLogin: Bool {
         didSet {
             guard launchAtLogin != LaunchAtLogin.isEnabled else { return }
@@ -76,6 +88,8 @@ final class UsageStore: ObservableObject {
             }
         }
     }
+    /// Version plus récente détectée sur GitHub, sinon nil.
+    @Published private(set) var availableUpdate: (version: String, url: URL)?
     /// Vrai si un token manuel est actuellement enregistré.
     @Published private(set) var hasManualToken = TokenResolver.manualTokenExists()
 
@@ -109,12 +123,14 @@ final class UsageStore: ObservableObject {
         percentColor = ColorStorage.color(fromHex: defaults.string(forKey: PreferenceKey.percentColor))
             ?? ColorStorage.defaultPercentColor
         notificationsEnabled = defaults.object(forKey: PreferenceKey.notificationsEnabled) as? Bool ?? true
+        updateCheckEnabled = defaults.object(forKey: PreferenceKey.updateCheckEnabled) as? Bool ?? true
         launchAtLogin = LaunchAtLogin.isEnabled
 
         observeSystemEvents()
         startTicking()
         if notificationsEnabled { notifications.requestAuthorizationIfNeeded() }
         startPolling()
+        checkForUpdates()
     }
 
     /// Toutes les chaînes de l'interface, dans la langue courante.
@@ -211,6 +227,7 @@ final class UsageStore: ObservableObject {
             self.pendingRetryAfter = nil
             self.hasManualToken = TokenResolver.manualTokenExists()
             notifications.evaluate(snapshot: snapshot, enabled: notificationsEnabled, loc: loc)
+            checkForUpdates()
         } catch let error as UsageAPIError {
             consecutiveFailures += 1
             pendingRetryAfter = error.serverRetryAfter
@@ -239,6 +256,22 @@ final class UsageStore: ObservableObject {
         let exponential = activeInterval * pow(2, Double(consecutiveFailures - 1))
         let backoff = min(exponential, maxBackoff)
         return min(max(backoff, pendingRetryAfter ?? 0), maxBackoff)
+    }
+
+    // MARK: - Mises à jour
+
+    /// Interroge GitHub au plus une fois par 24 h, sauf `force` (réglage réactivé).
+    /// La date du dernier essai est persistée pour ne pas repartir à zéro à chaque lancement.
+    func checkForUpdates(force: Bool = false) {
+        guard updateCheckEnabled else { return }
+        if !force, let last = defaults.object(forKey: PreferenceKey.lastUpdateCheck) as? Date,
+           Date().timeIntervalSince(last) < UpdateChecker.interval { return }
+        defaults.set(Date(), forKey: PreferenceKey.lastUpdateCheck)
+        Task { @MainActor [weak self] in
+            let result = await UpdateChecker.latestVersionIfNewer()
+            guard let self, self.updateCheckEnabled else { return }
+            self.availableUpdate = result
+        }
     }
 
     // MARK: - Token manuel

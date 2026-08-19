@@ -19,12 +19,18 @@ ne convient pas — elle ne dépose qu'une clé Electron `Claude Safe Storage`, 
 
 ## Règles à ne pas enfreindre
 
-- **Une seule requête sortante**, vers `https://api.anthropic.com/api/oauth/usage`. Aucune
-  télémétrie, aucun paquet tiers, aucun SDK. Toute nouvelle dépendance réseau est un bug.
+- **Deux destinations sortantes, pas une de plus** : `https://api.anthropic.com/api/oauth/usage`
+  pour les quotas, et `https://api.github.com/repos/ClawClawOne/ClaudeTray/releases/latest` pour la
+  vérification quotidienne de version, anonyme et débrayable (`updateCheckEnabled`). Aucune
+  télémétrie, aucun paquet tiers, aucun SDK. Toute autre dépendance réseau est un bug.
 - **Header `anthropic-beta: oauth-2025-04-20` obligatoire.** Sans lui, l'endpoint répond 401.
 - **Jamais de `ANTHROPIC_API_KEY`.** C'est un abonnement Max, pas une clé à la consommation.
 - **Le token n'est jamais mis en cache en mémoire.** Celui du trousseau expire en ~1 h et Claude
   Code le réécrit ; `TokenResolver.resolve()` est rappelé à chaque appel réseau.
+- **Notifications déclenchées au franchissement, jamais sur un état.** Une notification part
+  uniquement si le pourcentage était sous le seuil au relevé précédent et l'atteint au relevé
+  courant. Ne jamais ré-armer sur `resets_at` : la date de reset de la fenêtre 5 h avance à chaque
+  appel, ce qui renvoyait une notification à chaque rafraîchissement (bug 1.1).
 - **Aucun reset calculé localement.** On affiche `resets_at` tel quel, ou « non communiqué ».
   Le comportement réel de la fenêtre hebdo est instable : une prédiction fausse est pire que rien.
 - **Une erreur n'efface jamais les données.** Le dernier instantané valide reste à l'écran, avec
@@ -124,5 +130,6 @@ le DMG signé, pour un essai local.
 - **Documentation destinée aux utilisateurs en anglais** : `README.md`, `CHANGELOG.md`, notes de
   release, description du dépôt.
 - **Interface : les cinq langues, jamais de chaîne en dur.** Voir la section Localisation.
-- Le lien de soutien (`buymeacoffee.com/theunnamedcompany`) figure dans le README et dans
-  `.github/FUNDING.yml`. L'app elle-même n'en parle pas et ne doit pas en parler.
+- Le lien de soutien (`buymeacoffee.com/theunnamedcompany`) figure dans le README, dans
+  `.github/FUNDING.yml` et, depuis la 1.2, en pied de popover — une ligne discrète en 10 pt gris,
+  jamais une bannière ni une relance.

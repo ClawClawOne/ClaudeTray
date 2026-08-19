@@ -53,7 +53,9 @@ Click the menu bar indicator to open the popover: one progress bar per quota win
 percentage and a countdown to its reset.
 
 Percentages turn **orange at 80%** and **red at 95%**, in the menu bar and in the popover alike. A
-local notification fires at both thresholds, once per window, re-armed at the next reset.
+local notification fires when a window *crosses* a threshold — it was below at the previous reading
+and reaches it at the current one — so a rising window produces at most two notifications, whatever
+the refresh rate.
 
 ### Settings, all in the popover
 
@@ -68,7 +70,8 @@ local notification fires at both thresholds, once per window, re-armed at the ne
 | Colour | Eight swatches for percentages below the alert thresholds |
 | Spacing | Gap between elements, 2 to 24 pt |
 | Edge margin | Left and right margin, 0 to 24 pt |
-| Notifications | Alerts at 80% and 95%, toggleable |
+| Notifications | Alerts when a window crosses 80% and 95%, toggleable |
+| Update check | Asks GitHub once a day whether a newer release exists, toggleable |
 | Launch at login | Through `SMAppService` |
 
 In **Auto** mode the app polls every 90 s while the 5-hour window is in use, every 7 min otherwise.
@@ -100,7 +103,8 @@ quota and disappears otherwise. No empty rows are left behind.
 | Nothing in the menu bar | Menu bar is full | Quit another item, or reduce the spacing in the settings |
 
 The popover footer always shows which token source is in use, the time of the last successful
-refresh, and the current error message if there is one.
+refresh, and the current error message if there is one. When a newer release is out, a link to it
+appears there too.
 
 ## Security and privacy
 

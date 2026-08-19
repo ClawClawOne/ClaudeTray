@@ -95,6 +95,8 @@ final class UsageStore: ObservableObject {
     @Published private(set) var isCheckingUpdate = false
     /// Vrai après une vérification manuelle qui n'a rien trouvé de plus récent.
     @Published private(set) var checkedUpToDate = false
+    /// Délai avant la prochaine tentative, tel qu'il vient d'être planifié.
+    @Published private(set) var nextRetryDelay: TimeInterval?
     /// Message court affiché après une action locale (révocation), effacé au prochain succès.
     @Published private(set) var notice: ((Loc) -> String)?
     /// Vrai si un token manuel est actuellement enregistré.
@@ -145,7 +147,14 @@ final class UsageStore: ObservableObject {
 
     /// Message d'erreur affiché, ou nil s'il n'y en a pas.
     var errorMessage: String? {
-        if let lastError { return lastError.message(loc) }
+        if let lastError {
+            // Sur un 429, on affiche le délai réellement appliqué, pas le `Retry-After` brut :
+            // le serveur renvoie parfois 0, alors que le backoff impose bien plus.
+            if case .rateLimited = lastError, let delay = nextRetryDelay {
+                return loc.errorRateLimitedIn(UsageFormatting.shortDuration(delay, loc: loc))
+            }
+            return lastError.message(loc)
+        }
         return localError?(loc)
     }
 
@@ -239,6 +248,7 @@ final class UsageStore: ObservableObject {
             self.notice = nil
             self.consecutiveFailures = 0
             self.pendingRetryAfter = nil
+            self.nextRetryDelay = nil
             self.hasManualToken = TokenResolver.manualTokenExists()
             notifications.evaluate(snapshot: snapshot, enabled: notificationsEnabled, loc: loc)
             checkForUpdates()
@@ -246,12 +256,14 @@ final class UsageStore: ObservableObject {
             consecutiveFailures += 1
             pendingRetryAfter = error.serverRetryAfter
             lastError = error
+            nextRetryDelay = nextDelay()
             if case .token = error { tokenSource = nil }
             hasManualToken = TokenResolver.manualTokenExists()
         } catch {
             consecutiveFailures += 1
             pendingRetryAfter = nil
             lastError = .network(error.localizedDescription)
+            nextRetryDelay = nextDelay()
         }
     }
 

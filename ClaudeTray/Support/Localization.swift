@@ -307,6 +307,16 @@ struct Loc {
           "401 — il token manuale è stato rifiutato. Ha la priorità sul portachiavi: cancellalo per tornare a Claude Code, oppure incollane uno nuovo da «claude setup-token».")
     }
 
+    /// Variante avec un délai déjà mis en forme ("2 min 30 s"), utilisée quand on connaît
+    /// le délai réellement planifié plutôt que le `Retry-After` brut.
+    func errorRateLimitedIn(_ duration: String) -> String {
+        p("429 — too many requests. Retrying in \(duration).",
+          "429 — trop de requêtes. Nouvelle tentative dans \(duration).",
+          "429 — zu viele Anfragen. Nächster Versuch in \(duration).",
+          "429 — demasiadas solicitudes. Nuevo intento en \(duration).",
+          "429 — troppe richieste. Nuovo tentativo tra \(duration).")
+    }
+
     func errorRateLimited(_ seconds: Int?) -> String {
         guard let seconds else {
             return p("429 — too many requests. Automatically slowing down.",

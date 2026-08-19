@@ -2,6 +2,13 @@
 
 [ClaudeTray](https://github.com/ClawClawOne/ClaudeTray) — [TheUnnamedCompany](https://theunnamedcompany.com)
 
+## 1.5 — 19 August 2026
+
+- **Fixed: the 429 message announced a wrong delay.** It printed the server’s `Retry-After` header,
+  which is sometimes `0`, while the app actually waits for its own exponential backoff — so the
+  popover could read “Retrying in 0 s” and then sit still for minutes. It now shows the delay that
+  was really scheduled, formatted like the countdowns (“2 min 30 s”).
+
 ## 1.4 — 19 August 2026
 
 - **An app icon.** ClaudeTray lives in the menu bar, but it still shows up in Finder, in the DMG and

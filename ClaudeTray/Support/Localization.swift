@@ -173,7 +173,12 @@ struct Loc {
 
     var pasteToken: String { p("Paste a manual token", "Coller un token manuel", "Token manuell einfügen", "Pegar un token manual", "Incolla un token manuale") }
     var hideToken: String { p("Hide the manual token", "Masquer le token manuel", "Token-Feld ausblenden", "Ocultar el token manual", "Nascondi il token manuale") }
-    var clear: String { p("Clear", "Effacer", "Löschen", "Borrar", "Cancella") }
+    /// Libellé explicite : ce bouton n'efface que le token collé dans l'app,
+    /// jamais l'autorisation du trousseau accordée à ClaudeTray.
+    var clearManualToken: String {
+        p("Clear the manual token", "Effacer le token manuel", "Manuellen Token löschen",
+          "Borrar el token manual", "Cancella il token manuale")
+    }
     var save: String { p("Save", "Enregistrer", "Sichern", "Guardar", "Salva") }
     var quit: String { p("Quit", "Quitter", "Beenden", "Salir", "Esci") }
 
@@ -240,6 +245,16 @@ struct Loc {
           "401 — Token abgelehnt oder abgelaufen. Claude Code einmal starten oder Token manuell einfügen.",
           "401 — token rechazado o caducado. Ejecuta Claude Code para renovarlo o pega un token manual.",
           "401 — token rifiutato o scaduto. Avvia Claude Code per rinnovarlo o incolla un token manuale.")
+    }
+
+    /// Un 401 sur le token manuel se corrige autrement : le token collé est mauvais,
+    /// et tant qu'il est là il prime sur le trousseau.
+    var errorUnauthorizedManual: String {
+        p("401 — the manual token was rejected. It takes priority over the keychain: clear it to fall back to Claude Code, or paste a fresh one from “claude setup-token”.",
+          "401 — le token manuel a été refusé. Il prime sur le trousseau : efface-le pour revenir à Claude Code, ou colle-en un nouveau issu de « claude setup-token ».",
+          "401 — der manuelle Token wurde abgelehnt. Er hat Vorrang vor dem Schlüsselbund: löschen, um zu Claude Code zurückzukehren, oder einen neuen aus „claude setup-token“ einfügen.",
+          "401 — el token manual fue rechazado. Tiene prioridad sobre el llavero: bórralo para volver a Claude Code o pega uno nuevo de «claude setup-token».",
+          "401 — il token manuale è stato rifiutato. Ha la priorità sul portachiavi: cancellalo per tornare a Claude Code, oppure incollane uno nuovo da «claude setup-token».")
     }
 
     func errorRateLimited(_ seconds: Int?) -> String {

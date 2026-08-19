@@ -1,7 +1,9 @@
 import Foundation
 
 enum UsageAPIError: Error {
-    case unauthorized
+    /// La source est retenue pour que le message dise quel token a été refusé :
+    /// un 401 sur le token manuel ne se corrige pas comme un 401 sur le trousseau.
+    case unauthorized(source: TokenSource?)
     case rateLimited(retryAfter: TimeInterval?)
     case unexpectedSchema
     case http(status: Int)
@@ -10,8 +12,8 @@ enum UsageAPIError: Error {
 
     func message(_ loc: Loc) -> String {
         switch self {
-        case .unauthorized:
-            return loc.errorUnauthorized
+        case .unauthorized(let source):
+            return source == .manual ? loc.errorUnauthorizedManual : loc.errorUnauthorized
         case .rateLimited(let retryAfter):
             return loc.errorRateLimited(retryAfter.map { Int($0.rounded()) })
         case .unexpectedSchema:
@@ -51,16 +53,19 @@ struct UsageAPIClient {
         session = URLSession(configuration: config)
     }
 
-    /// Un appel = une résolution de token. Le token du trousseau expire en ~1 h,
+    /// Résolution isolée de l'appel réseau : l'appelant connaît ainsi la source
+    /// avant même de savoir si la requête aboutit, et peut l'afficher en cas d'échec.
+    /// Un appel = une résolution. Le token du trousseau expire en ~1 h,
     /// il ne doit jamais être conservé en mémoire entre deux appels.
-    func fetch() async throws -> (snapshot: UsageSnapshot, source: TokenSource) {
-        let token: ResolvedToken
+    func resolveToken() throws -> ResolvedToken {
         do {
-            token = try resolver.resolve()
+            return try resolver.resolve()
         } catch let error as TokenError {
             throw UsageAPIError.token(error)
         }
+    }
 
+    func fetch(using token: ResolvedToken) async throws -> UsageSnapshot {
         var request = URLRequest(url: Self.endpoint)
         request.httpMethod = "GET"
         request.setValue("Bearer \(token.value)", forHTTPHeaderField: "Authorization")
@@ -83,7 +88,7 @@ struct UsageAPIClient {
         case 200:
             break
         case 401, 403:
-            throw UsageAPIError.unauthorized
+            throw UsageAPIError.unauthorized(source: token.source)
         case 429:
             throw UsageAPIError.rateLimited(retryAfter: Self.retryAfter(from: http))
         default:
@@ -97,7 +102,7 @@ struct UsageAPIClient {
             throw UsageAPIError.unexpectedSchema
         }
 
-        return (UsageSnapshot(raw: raw, fetchedAt: Date()), token.source)
+        return UsageSnapshot(raw: raw, fetchedAt: Date())
     }
 
     private static func retryAfter(from response: HTTPURLResponse) -> TimeInterval? {

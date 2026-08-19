@@ -209,7 +209,7 @@ struct PopoverView: View {
                 .controlSize(.small)
 
                 if store.hasManualToken {
-                    Button(loc.clear) { store.clearManualToken() }
+                    Button(loc.clearManualToken) { store.clearManualToken() }
                         .controlSize(.small)
                 }
             }

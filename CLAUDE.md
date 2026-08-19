@@ -4,7 +4,7 @@ App macOS en barre de menu, SwiftUI natif, macOS 14+, **zéro dépendance extern
 Elle affiche l'usage du quota Claude (abonnement Max) : fenêtre 5 h, fenêtre hebdomadaire,
 et une colonne par modèle limité (FABLE, OPUS… selon ce que renvoie l'API).
 
-Version courante : **1.2**. Dépôt public sous licence MIT, releases sur GitHub.
+Version courante : **1.3**. Dépôt public sous licence MIT, releases sur GitHub.
 
 Tout ce dépôt est public, ce fichier compris : il tient lieu de guide de contribution. Aucun secret,
 aucun identifiant Apple, aucun chemin local n'y entre — les seuls identifiants du dépôt sont les
@@ -35,6 +35,14 @@ ne convient pas — elle ne dépose qu'une clé Electron `Claude Safe Storage`, 
   uniquement si le pourcentage était sous le seuil au relevé précédent et l'atteint au relevé
   courant. Ne jamais ré-armer sur `resets_at` : la date de reset de la fenêtre 5 h avance à chaque
   appel, ce qui renvoyait une notification à chaque rafraîchissement (bug 1.1).
+- **La source du token est publiée à la résolution, pas au succès.** `UsageStore.fetchOnce` fixe
+  `tokenSource` avant la requête. Sinon un token manuel refusé laisse à l'écran la source du dernier
+  succès (le trousseau), et l'app a l'air d'ignorer le token collé alors qu'elle vient de l'utiliser
+  et de se faire refuser (bug 1.2).
+- **Le token manuel prime tant que le fichier existe**, même s'il déclenche un 401. Le seul retour
+  au trousseau est la suppression du fichier via « Effacer le token manuel ». Ce bouton ne touche
+  jamais l'autorisation trousseau accordée à ClaudeTray : rien dans l'app ne peut la révoquer, ça se
+  fait dans Trousseaux d'accès.
 - **Aucun reset calculé localement.** On affiche `resets_at` tel quel, ou « non communiqué ».
   Le comportement réel de la fenêtre hebdo est instable : une prédiction fausse est pire que rien.
 - **Une erreur n'efface jamais les données.** Le dernier instantané valide reste à l'écran, avec
@@ -94,6 +102,7 @@ doit s'appliquer immédiatement. Conséquences à garder en tête :
 | Schéma de la réponse | `Models/UsageModels.swift`, `RawUsageResponse` / `RawLimit` |
 | Header beta, erreurs HTTP, dates | `Services/UsageAPIClient.swift` |
 | Sources du token | `Services/TokenResolver.swift` |
+| Source affichée, erreurs de token | `Services/UsageStore.swift`, `fetchOnce` |
 | Cadence, backoff, veille | `Services/UsageStore.swift` |
 | Rendu de la barre de menu | `Views/MenuBarLabel.swift` |
 | Vérification de version | `Services/UpdateChecker.swift` |

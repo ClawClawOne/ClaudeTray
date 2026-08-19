@@ -96,15 +96,17 @@ quota and disappears otherwise. No empty rows are left behind.
 | --- | --- | --- |
 | "No token found" | Claude Code missing, or never logged in | Run `claude` then `/login`, or paste a token from `claude setup-token` |
 | "401 — token rejected or expired" | Expired token, Claude Code idle for a long time | Run `claude` once, or use a `setup-token` token |
+| "401 — the manual token was rejected" | A manual token is stored and the API refuses it | It takes priority over the keychain: clear it with **Clear the manual token**, or paste a fresh one |
 | "429 — too many requests" | API polled too often | Nothing to do: the app backs off on its own, up to 30 min between attempts |
 | "Unexpected response format" | The undocumented endpoint changed shape | Open an issue; the last valid data stays on screen |
 | "Data stale for X" | No successful call for 15 min | Hit the refresh button, or check your network |
 | The keychain dialog keeps coming back | Unsigned build, compiled locally | Choose **Always Allow**, or paste a manual token |
 | Nothing in the menu bar | Menu bar is full | Quit another item, or reduce the spacing in the settings |
 
-The popover footer always shows which token source is in use, the time of the last successful
-refresh, and the current error message if there is one. When a newer release is out, a link to it
-appears there too.
+The popover footer always shows which token source the last call used — including when that call
+failed, so a rejected manual token is named as such instead of leaving the previous source on
+screen — the time of the last successful refresh, and the current error message if there is one.
+When a newer release is out, a link to it appears there too.
 
 ## Security and privacy
 
@@ -126,7 +128,9 @@ appears there too.
 
 Token resolution order, on every call:
 
-1. `~/Library/Application Support/ClaudeTray/token` — the token pasted into the app
+1. `~/Library/Application Support/ClaudeTray/token` — the token pasted into the app. While this file
+   exists it wins over every other source, even if the API rejects it; **Clear the manual token**
+   deletes it and hands the resolution back to Claude Code
 2. macOS keychain, service `Claude Code-credentials`
 3. `~/.claude/.credentials.json`, or `$CLAUDE_CONFIG_DIR/.credentials.json`
 
@@ -202,6 +206,7 @@ If the API changes, here is where to look:
 | Reset date not decoded | `UsageAPIClient.decodeISODate` |
 | Recurring 429s | `activeInterval` / `idleInterval` / `maxBackoff` in `UsageStore.swift` |
 | Notification fired more than once per threshold | `NotificationManager` — thresholds are crossings, never states |
+| Token source line disagrees with the token actually used | `UsageStore.fetchOnce` — the source is published at resolution, before the request |
 
 Code layout:
 

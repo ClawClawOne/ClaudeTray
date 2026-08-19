@@ -2,6 +2,19 @@
 
 [ClaudeTray](https://github.com/ClawClawOne/ClaudeTray) — [TheUnnamedCompany](https://theunnamedcompany.com)
 
+## 1.3 — 19 August 2026
+
+- **Fixed: the token source shown after a failure.** The popover only updated the “Token:” line after
+  a successful call, so pasting a manual token that the API rejected left the line showing the
+  previous source — usually the macOS keychain. It read as if ClaudeTray had ignored the manual token
+  and gone back to the keychain, when the manual token had in fact been used and refused. The source
+  is now published as soon as it is resolved, before the request, so it always names the token the
+  last call actually carried.
+- **A 401 on a manual token now says so.** The message states that the manual token takes priority
+  over the keychain and that clearing it is what falls back to Claude Code.
+- **The clear button is explicit.** “Clear” became “Clear the manual token” — it never touched the
+  keychain authorisation granted to ClaudeTray, and now says as much.
+
 ## 1.2 — 19 August 2026
 
 - **Fixed: repeated notifications.** Once a window went past 80 % or 95 %, a notification was posted

@@ -217,9 +217,12 @@ final class UsageStore: ObservableObject {
         isRefreshing = true
         defer { isRefreshing = false }
         do {
-            let (snapshot, source) = try await client.fetch()
+            // La source est publiée dès la résolution : après un 401 sur un token manuel,
+            // le popover doit dire « token manuel », pas la source du dernier succès.
+            let token = try client.resolveToken()
+            self.tokenSource = token.source
+            let snapshot = try await client.fetch(using: token)
             self.snapshot = snapshot
-            self.tokenSource = source
             self.lastSuccess = snapshot.fetchedAt
             self.lastError = nil
             self.localError = nil
@@ -232,6 +235,8 @@ final class UsageStore: ObservableObject {
             consecutiveFailures += 1
             pendingRetryAfter = error.serverRetryAfter
             lastError = error
+            if case .token = error { tokenSource = nil }
+            hasManualToken = TokenResolver.manualTokenExists()
         } catch {
             consecutiveFailures += 1
             pendingRetryAfter = nil

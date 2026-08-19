@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		003C9728243EAEFF50551F6A /* PopoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCE79B03AB22626547C4A7EE /* PopoverView.swift */; };
 		09296CD0B1476B50EE98256D /* UsageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 405A7572734DF3D8CBE2F9B2 /* UsageStore.swift */; };
+		10CDBC0B9E720896EED6F799 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 19AD1846235259EE9D25201C /* Assets.xcassets */; };
 		19758305D48931DFC7D8CC5F /* UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1418B4943912A8A26E347252 /* UpdateChecker.swift */; };
 		2E3E86DA4EF568D027A24605 /* ClaudeGlyph.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0EE4782AC0DA9E75E46523 /* ClaudeGlyph.swift */; };
 		35E9EEBBFF473F3BBD738455 /* UsageRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A8B93761A5E2BBB20C62105 /* UsageRowView.swift */; };
@@ -20,6 +21,7 @@
 		8B3BE695BA09459B9E3AF582 /* UsageModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1C18961713971167AA01241 /* UsageModels.swift */; };
 		8F2B18024E78450D1ECB30CE /* LaunchAtLogin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D25F635BD026F50C0DA039 /* LaunchAtLogin.swift */; };
 		90651053490A89911C12FF70 /* ColorStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C5B9BBF5F7D5D9A19867EE /* ColorStorage.swift */; };
+		B3715213A45E31F378DB86EA /* KeychainAccessRevoker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD83E95DD337BA576D3FF0D1 /* KeychainAccessRevoker.swift */; };
 		C613177453FE20BD17259EAB /* ClaudeTrayApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 390BDCA572F35E6306B8157A /* ClaudeTrayApp.swift */; };
 		C9E18EAFE786ABCD84D8FC08 /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 426783D005704AA3088117B3 /* Localization.swift */; };
 		F4BF9B9DA2BEA73D81A5A78C /* UsageAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = E95EA5DA2E25FA80744F6E2C /* UsageAPIClient.swift */; };
@@ -27,6 +29,7 @@
 
 /* Begin PBXFileReference section */
 		1418B4943912A8A26E347252 /* UpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateChecker.swift; sourceTree = "<group>"; };
+		19AD1846235259EE9D25201C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2A0A2290A80EDD0802B00B63 /* Formatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formatting.swift; sourceTree = "<group>"; };
 		390BDCA572F35E6306B8157A /* ClaudeTrayApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeTrayApp.swift; sourceTree = "<group>"; };
 		405A7572734DF3D8CBE2F9B2 /* UsageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageStore.swift; sourceTree = "<group>"; };
@@ -45,12 +48,14 @@
 		E95EA5DA2E25FA80744F6E2C /* UsageAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageAPIClient.swift; sourceTree = "<group>"; };
 		F313BC92B0FFD810D094F4C3 /* ClaudeTray.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ClaudeTray.entitlements; sourceTree = "<group>"; };
 		FCE79B03AB22626547C4A7EE /* PopoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverView.swift; sourceTree = "<group>"; };
+		FD83E95DD337BA576D3FF0D1 /* KeychainAccessRevoker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainAccessRevoker.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
 		4A53BDD6DBEEDB010E96E55A /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				FD83E95DD337BA576D3FF0D1 /* KeychainAccessRevoker.swift */,
 				58894594E9E075A2D0974B0C /* NotificationManager.swift */,
 				AA267DD7F2F0103EF344D7A9 /* TokenResolver.swift */,
 				1418B4943912A8A26E347252 /* UpdateChecker.swift */,
@@ -75,6 +80,7 @@
 		760DC894D777387AEB9A5DDB /* ClaudeTray */ = {
 			isa = PBXGroup;
 			children = (
+				19AD1846235259EE9D25201C /* Assets.xcassets */,
 				F313BC92B0FFD810D094F4C3 /* ClaudeTray.entitlements */,
 				390BDCA572F35E6306B8157A /* ClaudeTrayApp.swift */,
 				D95646B913A2BB8B438E5DFD /* Info.plist */,
@@ -129,6 +135,7 @@
 			buildConfigurationList = 4A109B8CE1A14F9CD6063F50 /* Build configuration list for PBXNativeTarget "ClaudeTray" */;
 			buildPhases = (
 				828CBAEF4E4CDD9C29A03DD4 /* Sources */,
+				E06AD45590557AA5FA5ACE83 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -174,6 +181,17 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		E06AD45590557AA5FA5ACE83 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				10CDBC0B9E720896EED6F799 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		828CBAEF4E4CDD9C29A03DD4 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -183,6 +201,7 @@
 				C613177453FE20BD17259EAB /* ClaudeTrayApp.swift in Sources */,
 				90651053490A89911C12FF70 /* ColorStorage.swift in Sources */,
 				4B78D46B99F1F1E91660A783 /* Formatting.swift in Sources */,
+				B3715213A45E31F378DB86EA /* KeychainAccessRevoker.swift in Sources */,
 				8F2B18024E78450D1ECB30CE /* LaunchAtLogin.swift in Sources */,
 				C9E18EAFE786ABCD84D8FC08 /* Localization.swift in Sources */,
 				743D403178771F295795F52D /* MenuBarLabel.swift in Sources */,
@@ -235,7 +254,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -254,7 +273,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.3;
+				MARKETING_VERSION = 1.4;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -338,7 +357,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -351,7 +370,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.3;
+				MARKETING_VERSION = 1.4;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";

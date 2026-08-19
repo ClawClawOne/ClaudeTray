@@ -194,9 +194,59 @@ struct Loc {
           "La versión \(version) está disponible", "La versione \(version) è disponibile")
     }
 
+    var checkNow: String { p("Check now", "Vérifier maintenant", "Jetzt prüfen", "Comprobar ahora", "Controlla ora") }
+    var checkingUpdate: String { p("Checking…", "Vérification…", "Prüfung läuft…", "Comprobando…", "Verifica…") }
+
+    var upToDate: String {
+        p("ClaudeTray is up to date.", "ClaudeTray est à jour.", "ClaudeTray ist aktuell.",
+          "ClaudeTray está actualizado.", "ClaudeTray è aggiornato.")
+    }
+
     var supportProject: String {
         p("Buy me a coffee", "Offrez-moi un café", "Spendier mir einen Kaffee",
           "Invítame a un café", "Offrimi un caffè")
+    }
+
+    var revokeToken: String {
+        p("Revoke token access", "Révoquer l'accès au token", "Token-Zugriff widerrufen",
+          "Revocar el acceso al token", "Revoca l'accesso al token")
+    }
+
+    var revokeConfirm: String {
+        p("Confirm revocation", "Confirmer la révocation", "Widerruf bestätigen",
+          "Confirmar la revocación", "Conferma la revoca")
+    }
+
+    var revokeHint: String {
+        p("Deletes the manual token and removes ClaudeTray from the keychain item’s trusted apps. macOS will ask for permission again on the next call.",
+          "Supprime le token manuel et retire ClaudeTray des applications de confiance de l'item de trousseau. macOS redemandera l'autorisation au prochain appel.",
+          "Löscht den manuellen Token und entfernt ClaudeTray aus den vertrauenswürdigen Apps des Schlüsselbund-Eintrags. macOS fragt beim nächsten Aufruf erneut nach.",
+          "Elimina el token manual y quita ClaudeTray de las apps de confianza del elemento del llavero. macOS volverá a pedir permiso en la próxima llamada.",
+          "Elimina il token manuale e rimuove ClaudeTray dalle app attendibili dell'elemento del portachiavi. macOS chiederà di nuovo l'autorizzazione alla prossima chiamata.")
+    }
+
+    func revokeDone(_ count: Int) -> String {
+        p("Access revoked (\(count) keychain entries removed).",
+          "Accès révoqué (\(count) entrées de trousseau retirées).",
+          "Zugriff widerrufen (\(count) Schlüsselbund-Einträge entfernt).",
+          "Acceso revocado (\(count) entradas del llavero eliminadas).",
+          "Accesso revocato (\(count) voci del portachiavi rimosse).")
+    }
+
+    var revokeNothing: String {
+        p("Nothing to revoke: ClaudeTray was not in the keychain item’s trusted apps.",
+          "Rien à révoquer : ClaudeTray ne figurait pas dans les applications de confiance de l'item.",
+          "Nichts zu widerrufen: ClaudeTray stand nicht in den vertrauenswürdigen Apps des Eintrags.",
+          "Nada que revocar: ClaudeTray no estaba entre las apps de confianza del elemento.",
+          "Niente da revocare: ClaudeTray non era tra le app attendibili dell'elemento.")
+    }
+
+    func revokeFailed(_ detail: String) -> String {
+        p("Revocation failed: \(detail). Remove ClaudeTray by hand in Keychain Access, under the “Claude Code-credentials” item.",
+          "Révocation impossible : \(detail). Retire ClaudeTray à la main dans Trousseaux d'accès, sur l'item « Claude Code-credentials ».",
+          "Widerruf fehlgeschlagen: \(detail). ClaudeTray im Schlüsselbundverwaltung beim Eintrag „Claude Code-credentials“ von Hand entfernen.",
+          "Revocación fallida: \(detail). Quita ClaudeTray a mano en Acceso a Llaveros, en el elemento «Claude Code-credentials».",
+          "Revoca non riuscita: \(detail). Rimuovi ClaudeTray a mano in Accesso Portachiavi, sull'elemento «Claude Code-credentials».")
     }
 
     var tokenHint: String {

@@ -7,6 +7,8 @@ struct PopoverView: View {
     @ObservedObject var store: UsageStore
     @State private var manualToken = ""
     @State private var showTokenField = false
+    /// Révocation en deux temps : pas de panneau modal, qui ferait disparaître le popover.
+    @State private var confirmRevoke = false
 
     /// Raccourci : toutes les chaînes viennent de la langue choisie dans les réglages.
     private var loc: Loc { store.loc }
@@ -139,7 +141,15 @@ struct PopoverView: View {
             Toggle(loc.showRemaining, isOn: $store.showRemaining)
             Toggle(loc.notificationsSetting, isOn: $store.notificationsEnabled)
             Toggle(loc.launchAtLogin, isOn: $store.launchAtLogin)
-            Toggle(loc.settingCheckUpdates, isOn: $store.updateCheckEnabled)
+            HStack(spacing: 6) {
+                Toggle(loc.settingCheckUpdates, isOn: $store.updateCheckEnabled)
+                Spacer()
+                Button(store.isCheckingUpdate ? loc.checkingUpdate : loc.checkNow) {
+                    store.checkForUpdates(force: true)
+                }
+                .controlSize(.small)
+                .disabled(store.isCheckingUpdate)
+            }
         }
         .toggleStyle(.checkbox)
         .font(.system(size: 11))
@@ -152,6 +162,19 @@ struct PopoverView: View {
                     .font(.system(size: 10))
                     .foregroundStyle(.orange)
                     .fixedSize(horizontal: false, vertical: true)
+            }
+
+            if let notice = store.noticeMessage {
+                Label(notice, systemImage: "info.circle")
+                    .font(.system(size: 10))
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            if store.checkedUpToDate {
+                Text(loc.upToDate)
+                    .font(.system(size: 10))
+                    .foregroundStyle(.secondary)
             }
 
             if let staleFor = store.staleFor {
@@ -211,6 +234,26 @@ struct PopoverView: View {
                 if store.hasManualToken {
                     Button(loc.clearManualToken) { store.clearManualToken() }
                         .controlSize(.small)
+                }
+            }
+
+            HStack(alignment: .firstTextBaseline) {
+                Button(confirmRevoke ? loc.revokeConfirm : loc.revokeToken) {
+                    if confirmRevoke {
+                        confirmRevoke = false
+                        store.revokeToken()
+                    } else {
+                        confirmRevoke = true
+                    }
+                }
+                .controlSize(.small)
+                .tint(confirmRevoke ? .red : nil)
+
+                if confirmRevoke {
+                    Text(loc.revokeHint)
+                        .font(.system(size: 9))
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
 

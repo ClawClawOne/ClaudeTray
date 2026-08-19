@@ -2,6 +2,20 @@
 
 [ClaudeTray](https://github.com/ClawClawOne/ClaudeTray) — [TheUnnamedCompany](https://theunnamedcompany.com)
 
+## 1.4 — 19 August 2026
+
+- **An app icon.** ClaudeTray lives in the menu bar, but it still shows up in Finder, in the DMG and
+  in system dialogs, where it had none. The icon is drawn by `scripts/make-icon.swift` — a quota ring
+  three quarters full — so it can be regenerated instead of being an opaque binary.
+- **“Check now” button** next to the daily update setting. The automatic check runs once every 24
+  hours; the button asks GitHub immediately and says so when nothing newer exists. It works even when
+  the daily check is switched off: asking explicitly is consent for that one request.
+- **“Revoke token access” button.** It deletes the manual token and removes ClaudeTray from the
+  trusted applications of the `Claude Code-credentials` keychain item, so macOS asks for permission
+  again on the next call — the “Always Allow” granted once could not be undone from the app before.
+  The button asks for confirmation, only ever removes entries that point at ClaudeTray, and writes
+  nothing if there is none.
+
 ## 1.3 — 19 August 2026
 
 - **Fixed: the token source shown after a failure.** The popover only updated the “Token:” line after

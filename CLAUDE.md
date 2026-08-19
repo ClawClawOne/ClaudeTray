@@ -4,7 +4,7 @@ App macOS en barre de menu, SwiftUI natif, macOS 14+, **zéro dépendance extern
 Elle affiche l'usage du quota Claude (abonnement Max) : fenêtre 5 h, fenêtre hebdomadaire,
 et une colonne par modèle limité (FABLE, OPUS… selon ce que renvoie l'API).
 
-Version courante : **1.3**. Dépôt public sous licence MIT, releases sur GitHub.
+Version courante : **1.4**. Dépôt public sous licence MIT, releases sur GitHub.
 
 Tout ce dépôt est public, ce fichier compris : il tient lieu de guide de contribution. Aucun secret,
 aucun identifiant Apple, aucun chemin local n'y entre — les seuls identifiants du dépôt sont les
@@ -43,6 +43,11 @@ ne convient pas — elle ne dépose qu'une clé Electron `Claude Safe Storage`, 
   au trousseau est la suppression du fichier via « Effacer le token manuel ». Ce bouton ne touche
   jamais l'autorisation trousseau accordée à ClaudeTray : rien dans l'app ne peut la révoquer, ça se
   fait dans Trousseaux d'accès.
+- **Ne jamais toucher aux entrées de trousseau des autres.** L'item `Claude Code-credentials`
+  appartient à Claude Code. `KeychainAccessRevoker` ne retire que les applications de confiance dont
+  le chemin désigne ClaudeTray, et n'écrit rien s'il n'y en a aucune. La liste de partitions
+  (`teamid:`, `apple-tool:`) est laissée intacte : la réécrire risquerait de couper Claude Code de
+  ses propres identifiants.
 - **Aucun reset calculé localement.** On affiche `resets_at` tel quel, ou « non communiqué ».
   Le comportement réel de la fenêtre hebdo est instable : une prédiction fausse est pire que rien.
 - **Une erreur n'efface jamais les données.** Le dernier instantané valide reste à l'écran, avec
@@ -103,6 +108,8 @@ doit s'appliquer immédiatement. Conséquences à garder en tête :
 | Header beta, erreurs HTTP, dates | `Services/UsageAPIClient.swift` |
 | Sources du token | `Services/TokenResolver.swift` |
 | Source affichée, erreurs de token | `Services/UsageStore.swift`, `fetchOnce` |
+| Révocation de l'accès trousseau | `Services/KeychainAccessRevoker.swift` |
+| Icône de l'app | `scripts/make-icon.swift`, sortie dans `ClaudeTray/Assets.xcassets` |
 | Cadence, backoff, veille | `Services/UsageStore.swift` |
 | Rendu de la barre de menu | `Views/MenuBarLabel.swift` |
 | Vérification de version | `Services/UpdateChecker.swift` |
@@ -121,7 +128,13 @@ xcodegen generate
 xcodebuild -project ClaudeTray.xcodeproj -scheme ClaudeTray -configuration Debug build
 ```
 
-Le projet doit compiler **sans aucun avertissement**. C'est le cas aujourd'hui, ça doit le rester.
+Le projet doit compiler **sans aucun avertissement**, à une exception près, documentée : les six
+avertissements de dépréciation `SecKeychain` de `Services/KeychainAccessRevoker.swift`. Aucune API
+moderne ne sait modifier la liste d'applications de confiance d'un item ; `SecItem*` lit et écrit
+l'item, pas son ACL. Ajouter un nouvel avertissement ailleurs reste interdit.
+
+Ajout d'un fichier source ou d'une ressource : `xcodegen generate` avant de compiler, sinon le
+fichier n'existe pas pour Xcode et l'erreur ressemble à un problème de code (`cannot find X in scope`).
 
 ## Publier une version
 

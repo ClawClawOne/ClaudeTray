@@ -1,4 +1,5 @@
 import AppKit
+import Security
 import SwiftUI
 import Combine
 import Foundation
@@ -90,6 +91,12 @@ final class UsageStore: ObservableObject {
     }
     /// Version plus récente détectée sur GitHub, sinon nil.
     @Published private(set) var availableUpdate: (version: String, url: URL)?
+    /// Vérification de version en cours, pour le retour visuel du bouton manuel.
+    @Published private(set) var isCheckingUpdate = false
+    /// Vrai après une vérification manuelle qui n'a rien trouvé de plus récent.
+    @Published private(set) var checkedUpToDate = false
+    /// Message court affiché après une action locale (révocation), effacé au prochain succès.
+    @Published private(set) var notice: ((Loc) -> String)?
     /// Vrai si un token manuel est actuellement enregistré.
     @Published private(set) var hasManualToken = TokenResolver.manualTokenExists()
 
@@ -141,6 +148,9 @@ final class UsageStore: ObservableObject {
         if let lastError { return lastError.message(loc) }
         return localError?(loc)
     }
+
+    /// Message informatif (non fautif) affiché sous les erreurs.
+    var noticeMessage: String? { notice?(loc) }
 
     // MARK: - Données dérivées
 
@@ -226,6 +236,7 @@ final class UsageStore: ObservableObject {
             self.lastSuccess = snapshot.fetchedAt
             self.lastError = nil
             self.localError = nil
+            self.notice = nil
             self.consecutiveFailures = 0
             self.pendingRetryAfter = nil
             self.hasManualToken = TokenResolver.manualTokenExists()
@@ -268,14 +279,21 @@ final class UsageStore: ObservableObject {
     /// Interroge GitHub au plus une fois par 24 h, sauf `force` (réglage réactivé).
     /// La date du dernier essai est persistée pour ne pas repartir à zéro à chaque lancement.
     func checkForUpdates(force: Bool = false) {
-        guard updateCheckEnabled else { return }
+        // Le bouton manuel passe outre le réglage : demander explicitement une vérification
+        // vaut consentement pour cette requête-là, sans la réactiver en permanence.
+        guard updateCheckEnabled || force else { return }
         if !force, let last = defaults.object(forKey: PreferenceKey.lastUpdateCheck) as? Date,
            Date().timeIntervalSince(last) < UpdateChecker.interval { return }
+        guard !isCheckingUpdate else { return }
         defaults.set(Date(), forKey: PreferenceKey.lastUpdateCheck)
+        isCheckingUpdate = true
+        checkedUpToDate = false
         Task { @MainActor [weak self] in
             let result = await UpdateChecker.latestVersionIfNewer()
-            guard let self, self.updateCheckEnabled else { return }
+            guard let self else { return }
+            self.isCheckingUpdate = false
             self.availableUpdate = result
+            self.checkedUpToDate = force && result == nil
         }
     }
 
@@ -294,6 +312,30 @@ final class UsageStore: ObservableObject {
 
     func clearManualToken() {
         saveManualToken("")
+    }
+
+    /// Remet la configuration du token à zéro : suppression du token manuel, puis retrait de
+    /// ClaudeTray de la liste de confiance de l'item de trousseau. Le prochain appel redemande
+    /// donc l'autorisation, comme au premier lancement.
+    func revokeToken() {
+        try? TokenResolver.writeManualToken("")
+        hasManualToken = TokenResolver.manualTokenExists()
+
+        switch KeychainAccessRevoker.revokeSelf() {
+        case .revoked(let count):
+            notice = { $0.revokeDone(count) }
+            localError = nil
+        case .nothingToRevoke:
+            notice = { $0.revokeNothing }
+            localError = nil
+        case .failed(let status):
+            let detail = SecCopyErrorMessageString(status, nil) as String? ?? "code \(status)"
+            notice = nil
+            localError = { $0.revokeFailed(detail) }
+        }
+
+        tokenSource = nil
+        refreshNow()
     }
 
     // MARK: - Horloge et événements système

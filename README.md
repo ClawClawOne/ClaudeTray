@@ -108,7 +108,8 @@ quota and disappears otherwise. No empty rows are left behind.
 The popover footer always shows which token source the last call used — including when that call
 failed, so a rejected manual token is named as such instead of leaving the previous source on
 screen — the time of the last successful refresh, and the current error message if there is one.
-When a newer release is out, a link to it appears there too.
+When a newer release is out, a link to its GitHub page appears there too — ClaudeTray never
+downloads or installs anything, so replacing the app stays a manual drag from the DMG.
 
 ## Security and privacy
 

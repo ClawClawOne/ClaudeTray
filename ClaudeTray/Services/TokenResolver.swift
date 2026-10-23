@@ -155,8 +155,9 @@ struct TokenResolver {
             throw TokenError.keychainDenied(errSecInternalComponent)
         }
 
-        // Si macOS finit par afficher un dialogue malgré tout, on ne bloque pas l'app :
-        // l'appel échoue et le cycle de polling suivant réessaiera.
+        // Si macOS finit par afficher un dialogue malgré tout, la lecture abandonne au bout de
+        // 10 s et le cycle de polling suivant réessaie. `UsageStore` résout le token hors du
+        // thread principal : l'interface ne se fige pas pendant cette attente.
         if exited.wait(timeout: .now() + 10) == .timedOut {
             process.terminate()
             readDone.wait()
@@ -164,16 +165,38 @@ struct TokenResolver {
         }
         readDone.wait()
 
+        // `security` sort avec l'octet de poids faible de l'OSStatus : 44 pour errSecItemNotFound.
         switch process.terminationStatus {
         case 0:
-            // `-w` ajoute un saut de ligne final, que le décodeur JSON ignore.
-            return try Self.accessToken(fromCredentialsJSON: data, origin: "le trousseau")
+            return try Self.accessToken(fromCredentialsJSON: Self.decodeSecurityOutput(data),
+                                        origin: "le trousseau")
         case 44:
-            // Code de sortie de `security` pour errSecItemNotFound.
             return nil
+        case 36:
+            throw TokenError.keychainDenied(errSecInteractionNotAllowed)
+        case 128:
+            throw TokenError.keychainDenied(errSecUserCanceled)
         default:
             throw TokenError.keychainDenied(errSecAuthFailed)
         }
+    }
+
+    /// Sortie de `security -w` : texte brut, ou hexadécimal sans préfixe dès qu'un octet de l'item
+    /// n'est pas imprimable (UTF-8 non ASCII, saut de ligne). Un JSON commence par `{`, qui n'est
+    /// pas un chiffre hexadécimal : le texte brut ne peut pas être pris pour de l'hexadécimal.
+    private static func decodeSecurityOutput(_ data: Data) -> Data {
+        let text = String(decoding: data, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty, text.count % 2 == 0, text.allSatisfy(\.isHexDigit) else { return data }
+        var bytes = [UInt8]()
+        bytes.reserveCapacity(text.count / 2)
+        var index = text.startIndex
+        while index < text.endIndex {
+            let next = text.index(index, offsetBy: 2)
+            guard let byte = UInt8(text[index..<next], radix: 16) else { return data }
+            bytes.append(byte)
+            index = next
+        }
+        return Data(bytes)
     }
 
     // MARK: - Source 3 : ~/.claude/.credentials.json

@@ -124,24 +124,55 @@ struct TokenResolver {
 
     // MARK: - Source 2 : trousseau macOS
 
+    /// Lecture via `/usr/bin/security`, comme le fait Claude Code lui-même. À chaque
+    /// rafraîchissement du token, Claude Code réécrit l'item et ramène sa liste de partitions
+    /// à `apple-tool:` : un `SecItemCopyMatching` depuis ClaudeTray redemande alors l'accès,
+    /// même après « Toujours autoriser ». `security` est dans cette partition et dans les
+    /// applications de confiance de l'item : sa lecture reste silencieuse, quelle que soit la
+    /// signature de ClaudeTray.
     private func readKeychainToken() throws -> String? {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: "Claude Code-credentials",
-            kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne,
-        ]
-        var item: CFTypeRef?
-        let status = SecItemCopyMatching(query as CFDictionary, &item)
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/security")
+        process.arguments = ["find-generic-password", "-s", "Claude Code-credentials", "-w"]
+        let output = Pipe()
+        process.standardOutput = output
+        process.standardError = FileHandle.nullDevice
 
-        switch status {
-        case errSecSuccess:
-            guard let data = item as? Data else { throw TokenError.malformed("le trousseau") }
+        // Lecture du pipe en parallèle : l'item dépasse déjà 39 Ko et un pipe plein
+        // bloquerait `security` avant sa sortie.
+        var data = Data()
+        let readDone = DispatchSemaphore(value: 0)
+        DispatchQueue.global(qos: .utility).async {
+            data = output.fileHandleForReading.readDataToEndOfFile()
+            readDone.signal()
+        }
+
+        let exited = DispatchSemaphore(value: 0)
+        process.terminationHandler = { _ in exited.signal() }
+        do {
+            try process.run()
+        } catch {
+            throw TokenError.keychainDenied(errSecInternalComponent)
+        }
+
+        // Si macOS finit par afficher un dialogue malgré tout, on ne bloque pas l'app :
+        // l'appel échoue et le cycle de polling suivant réessaiera.
+        if exited.wait(timeout: .now() + 10) == .timedOut {
+            process.terminate()
+            readDone.wait()
+            throw TokenError.keychainDenied(errSecInteractionNotAllowed)
+        }
+        readDone.wait()
+
+        switch process.terminationStatus {
+        case 0:
+            // `-w` ajoute un saut de ligne final, que le décodeur JSON ignore.
             return try Self.accessToken(fromCredentialsJSON: data, origin: "le trousseau")
-        case errSecItemNotFound:
+        case 44:
+            // Code de sortie de `security` pour errSecItemNotFound.
             return nil
         default:
-            throw TokenError.keychainDenied(status)
+            throw TokenError.keychainDenied(errSecAuthFailed)
         }
     }
 

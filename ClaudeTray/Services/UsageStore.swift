@@ -263,7 +263,9 @@ final class UsageStore: ObservableObject {
         do {
             // La source est publiée dès la résolution : après un 401 sur un token manuel,
             // le popover doit dire « token manuel », pas la source du dernier succès.
-            let token = try client.resolveToken()
+            // La résolution lance `/usr/bin/security` et peut attendre 10 s : hors du thread principal.
+            let client = self.client
+            let token = try await Task.detached(priority: .utility) { try client.resolveToken() }.value
             self.tokenSource = token.source
             let snapshot = try await client.fetch(using: token)
             self.snapshot = snapshot
@@ -348,8 +350,8 @@ final class UsageStore: ObservableObject {
     }
 
     /// Remet la configuration du token à zéro : suppression du token manuel, puis retrait de
-    /// ClaudeTray de la liste de confiance de l'item de trousseau. Le prochain appel redemande
-    /// donc l'autorisation, comme au premier lancement.
+    /// ClaudeTray de la liste de confiance de l'item de trousseau, s'il y figure. Le prochain appel
+    /// relit le token de Claude Code via `/usr/bin/security`, sans rien demander.
     func revokeToken() {
         try? TokenResolver.writeManualToken("")
         hasManualToken = TokenResolver.manualTokenExists()

@@ -36,9 +36,8 @@ Tested on a Max subscription. Behaviour on other plans has not been verified.
 1. Download the `.dmg` from the [Releases](../../releases) page.
 2. Open it and drag **ClaudeTray** into **Applications**.
 3. Launch it. The app has no Dock icon: it appears in the menu bar, top right.
-4. macOS asks for keychain access — that is the app reading Claude Code's token. Pick
-   **Always Allow** so you are not asked again; **Revoke token access** in the popover takes that
-   grant back whenever you want.
+4. No keychain dialog appears. ClaudeTray reads Claude Code's token through `/usr/bin/security`,
+   the same way Claude Code does. See [Security and privacy](#security-and-privacy).
 
 The app is Developer ID signed and notarized by Apple: no Gatekeeper warning, nothing special to do
 on first launch.
@@ -107,10 +106,7 @@ The popover header carries the version number.
 | "429 — too many requests" | API polled too often | Nothing to do: the app backs off on its own, up to 30 min between attempts |
 | "Unexpected response format" | The undocumented endpoint changed shape | Open an issue; the last valid data stays on screen |
 | "Data stale for X" | No successful call for 15 min | Hit the refresh button, or check your network |
-| The keychain dialog keeps coming back | Unsigned build, compiled locally | Choose **Always Allow**, or paste a manual token |
-| You want the keychain dialog back | **Always Allow** was granted and you want to undo it | **Revoke token access** in the popover; it also deletes the manual token |
 | Nothing in the menu bar | Menu bar is full | Quit another item, or reduce the spacing in the settings |
-| A window opens without a click | The keychain dialog, after installing a new build | Grant it once; the popover itself no longer reopens on its own since 1.6 |
 
 The popover footer always shows which token source the last call used — including when that call
 failed, so a rejected manual token is named as such instead of leaving the previous source on
@@ -134,10 +130,12 @@ downloads or installs anything, so replacing the app stays a manual drag from th
   would rather write nothing to disk, leave that field empty: the keychain then stays the only source.
 - **Sandbox disabled**, out of necessity: reading the keychain and `~/.claude` is impossible
   otherwise. The hardened runtime is enabled and no signing exception is requested.
-- **The keychain grant is revocable from the app.** **Revoke token access** removes ClaudeTray from
-  the trusted applications of the `Claude Code-credentials` item — only the entries pointing at
-  ClaudeTray, never anyone else’s — so the “Always Allow” you granted once can be taken back
-  without opening Keychain Access.
+- **The keychain is read through `/usr/bin/security`.** Claude Code creates and rewrites its
+  `Claude Code-credentials` item with that tool, so the item lists `/usr/bin/security` as a trusted
+  application and macOS lets it read the item without a dialog. Any process running as you can read
+  the item the same way. ClaudeTray adds no access that Claude Code's item doesn't already allow.
+- **Revoke token access** deletes the manual token and removes any ClaudeTray entry from the item's
+  trusted applications. It never touches anyone else's entries.
 - **No auto-update**: the app never downloads or executes code.
 
 Token resolution order, on every call:
@@ -161,8 +159,8 @@ open ClaudeTray.xcodeproj      # then ⌘R
 ```
 
 Under **Signing & Capabilities**, tick *Automatically manage signing* and pick your team. Without a
-team the signature stays ad-hoc and macOS will ask for keychain access again after every rebuild —
-the manual token field in the popover is the way out.
+team the signature stays ad-hoc. That is enough to run it: the keychain read goes through
+`/usr/bin/security` and doesn't depend on the app's signature.
 
 After editing `project.yml`:
 

@@ -230,11 +230,11 @@ struct Loc {
     }
 
     var revokeHint: String {
-        p("Deletes the manual token and removes ClaudeTray from the keychain item’s trusted apps. macOS will ask for permission again on the next call.",
-          "Supprime le token manuel et retire ClaudeTray des applications de confiance de l'item de trousseau. macOS redemandera l'autorisation au prochain appel.",
-          "Löscht den manuellen Token und entfernt ClaudeTray aus den vertrauenswürdigen Apps des Schlüsselbund-Eintrags. macOS fragt beim nächsten Aufruf erneut nach.",
-          "Elimina el token manual y quita ClaudeTray de las apps de confianza del elemento del llavero. macOS volverá a pedir permiso en la próxima llamada.",
-          "Elimina il token manuale e rimuove ClaudeTray dalle app attendibili dell'elemento del portachiavi. macOS chiederà di nuovo l'autorizzazione alla prossima chiamata.")
+        p("Deletes the manual token and removes ClaudeTray from the keychain item’s trusted apps, if it is there. The keychain is read through /usr/bin/security, so the next call still reads Claude Code’s token without asking.",
+          "Supprime le token manuel et retire ClaudeTray des applications de confiance de l'item de trousseau, s'il y figure. Le trousseau étant lu via /usr/bin/security, l'appel suivant relit le token de Claude Code sans rien demander.",
+          "Löscht den manuellen Token und entfernt ClaudeTray, falls vorhanden, aus den vertrauenswürdigen Apps des Schlüsselbund-Eintrags. Da der Schlüsselbund über /usr/bin/security gelesen wird, liest der nächste Aufruf den Token von Claude Code weiterhin ohne Nachfrage.",
+          "Elimina el token manual y quita ClaudeTray de las apps de confianza del elemento del llavero, si figura. Como el llavero se lee mediante /usr/bin/security, la próxima llamada seguirá leyendo el token de Claude Code sin preguntar.",
+          "Elimina il token manuale e rimuove ClaudeTray dalle app attendibili dell'elemento del portachiavi, se presente. Poiché il portachiavi viene letto tramite /usr/bin/security, la prossima chiamata continuerà a leggere il token di Claude Code senza chiedere.")
     }
 
     func revokeDone(_ count: Int) -> String {
@@ -286,11 +286,11 @@ struct Loc {
     }
 
     func errorKeychainDenied(_ detail: String) -> String {
-        p("Keychain access denied (\(detail)). Allow ClaudeTray, or paste a manual token.",
-          "Accès au trousseau refusé (\(detail)). Autorise ClaudeTray, ou colle un token manuel.",
-          "Schlüsselbund-Zugriff verweigert (\(detail)). ClaudeTray erlauben oder Token manuell einfügen.",
-          "Acceso al llavero denegado (\(detail)). Autoriza ClaudeTray o pega un token manual.",
-          "Accesso al portachiavi negato (\(detail)). Autorizza ClaudeTray o incolla un token manuale.")
+        p("Keychain access denied (\(detail)). Check that the login keychain is unlocked, or paste a manual token.",
+          "Accès au trousseau refusé (\(detail)). Vérifie que le trousseau de session est déverrouillé, ou colle un token manuel.",
+          "Schlüsselbund-Zugriff verweigert (\(detail)). Prüfen, ob der Anmeldeschlüsselbund entsperrt ist, oder Token manuell einfügen.",
+          "Acceso al llavero denegado (\(detail)). Comprueba que el llavero de inicio de sesión esté desbloqueado o pega un token manual.",
+          "Accesso al portachiavi negato (\(detail)). Verifica che il portachiavi di login sia sbloccato o incolla un token manuale.")
     }
 
     func errorMalformedToken(_ origin: String) -> String {

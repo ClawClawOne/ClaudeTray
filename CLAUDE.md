@@ -107,10 +107,14 @@ doit s'appliquer immédiatement. Conséquences à garder en tête :
   sous `scope.model.display_name`. Aucune liste de modèles n'est figée dans le code.
 - **`resets_at` arrive avec ou sans fraction de seconde.** Les deux formats doivent passer, sinon
   le décodage casse au hasard des réponses.
-- **L'autorisation du trousseau est liée à la signature du binaire.** Chaque rebuild, ad-hoc comme
-  Developer ID, redéclenche la boîte de dialogue — y compris en installant une nouvelle version
-  publiée. D'où le token manuel accessible en un clic dans le popover. Ne pas confondre cette boîte
-  système avec le popover de l'app quand on cherche « une fenêtre qui s'ouvre toute seule ».
+- **Le trousseau se lit via `/usr/bin/security`, jamais via `SecItemCopyMatching`.** Claude Code
+  crée et réécrit son item avec `security add-generic-password -U`, sans `-T` : l'item fait confiance
+  à `/usr/bin/security`, et chaque rafraîchissement du token ramène sa liste de partitions à
+  `apple-tool:`. Une lecture directe depuis ClaudeTray redemande donc l'accès à chaque
+  rafraîchissement, « Toujours autoriser » ou pas (anthropics/claude-code#87348). La lecture via
+  `security` reste silencieuse, quelle que soit la signature de l'app, rebuild ad-hoc compris. Si
+  une boîte de dialogue réapparaît, Claude Code a changé sa façon d'écrire l'item : le délai de 10 s
+  de `readKeychainToken()` évite alors que l'app reste bloquée.
 
 ## Où intervenir
 
@@ -164,8 +168,7 @@ fichier n'existe pas pour Xcode et l'erreur ressemble à un problème de code (`
    ```
 
 5. Installer la nouvelle version localement : `cp -R build/DerivedData/Build/Products/Release/ClaudeTray.app /Applications/`
-   après avoir tué l'instance en cours. La signature Developer ID change par rapport à un build de
-   développement, donc macOS redemande l'accès au trousseau une fois.
+   après avoir tué l'instance en cours.
 
 **La release conditionne la vérification de version** : `UpdateChecker` lit `releases/latest`, donc
 une version publiée sans release GitHub reste invisible pour les installations existantes. Le tag
